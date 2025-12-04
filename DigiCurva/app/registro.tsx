@@ -25,6 +25,7 @@ interface UserFormData {
   calle: string;
   numeroCasa: string;
   localidad: string;
+  contraseña: string;
 }
 
 // 2. Definimos qué props recibe el componente InputGroup
@@ -48,7 +49,8 @@ export default function Registro() {
     telefono: '',
     calle: '',
     numeroCasa: '',
-    localidad: ''
+    localidad: '',
+    contraseña: ''
   });
 
   const { width } = useWindowDimensions();
@@ -68,16 +70,14 @@ export default function Registro() {
     }
 
     try {
-      const baseUrl = 'https://tu-api.com/endpoint';
+      const baseUrl = 'https://ljusstudie.site/DigiCurvaServer/registro.php';
       
       const params = new URLSearchParams({
-        nombre: formData.nombres,
-        apellido: formData.apellidos,
-        email: formData.email,
+        nombre: formData.nombres + ' ' + formData.apellidos,
+        correo: formData.email,
         telefono: formData.telefono,
-        calle: formData.calle,
-        num_casa: formData.numeroCasa,
-        localidad: formData.localidad
+        direccion: formData.calle +','+ formData.numeroCasa +','+ formData.localidad,
+        contrasena_hash: formData.contraseña
       });
 
       const finalUrl = `${baseUrl}?${params.toString()}`;
@@ -191,6 +191,14 @@ export default function Registro() {
                   onChangeText={(text: string) => handleChange('localidad', text)}
                 />
 
+                <InputGroup 
+                  label="Contraseña" 
+                  id="input_contraseña"
+                  value={formData.contraseña}
+                  onChangeText={(text: string) => handleChange('contraseña', text)}
+                  secureTextEntry={true} // <--- Agrega esta línea
+                />
+                
                 {/* FOTO UI */}
                 <Text style={styles.label}>Foto (opcional)</Text>
                 <View style={styles.photoSection}>
@@ -222,9 +230,16 @@ export default function Registro() {
     </ImageBackground>
   );
 }
-
+interface InputGroupProps {
+  label: string;
+  id: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  keyboardType?: KeyboardTypeOptions; 
+  secureTextEntry?: boolean; // <--- ¡ESTA LÍNEA ES LA QUE TE FALTA!
+}
 // --- COMPONENTE AUXILIAR TIPADO ---
-const InputGroup = ({ label, id, value, onChangeText, keyboardType = 'default' }: InputGroupProps) => (
+const InputGroup = ({ label, id, value, onChangeText, keyboardType = 'default', secureTextEntry = false}: InputGroupProps) => (
   <View style={styles.inputContainer}>
     <Text style={styles.label}>{label}</Text>
     <TextInput
@@ -233,6 +248,7 @@ const InputGroup = ({ label, id, value, onChangeText, keyboardType = 'default' }
       value={value}
       onChangeText={onChangeText}
       keyboardType={keyboardType}
+      secureTextEntry={secureTextEntry}
     />
   </View>
 );

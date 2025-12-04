@@ -14,6 +14,7 @@ import {
   ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Iconos estándar en Expo
+import { Link } from 'expo-router';
 
 // URL de la imagen de fondo (Usamos una similar de Unsplash para la demo)
 const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
@@ -40,12 +41,12 @@ export default function Login() {
 
     try {
       // REQUISITO: Método POST pero variables en URL (Query Params)
-      const baseUrl = 'https://tu-api.com/endpoint';
+      const baseUrl = 'https://ljusstudie.site/DigiCurvaServer/login.php';
       
       // Construcción manual de los parámetros URL
       const params = new URLSearchParams({
-        variable1: identifier, // Mapeado al input de usuario
-        variable2: password    // Mapeado a la contraseña
+        correo: identifier, // Mapeado al input de usuario
+        contrasena: password    // Mapeado a la contraseña
       });
 
       const finalUrl = `${baseUrl}?${params.toString()}`;
@@ -147,7 +148,9 @@ export default function Login() {
                   <View style={styles.formFooter}>
                     <Text style={styles.footerText}>
                       ¿No tiene una cuenta?{' '}
-                      <Text style={styles.linkText}>Registrarse en su lugar</Text>
+                      <Link href="/registro">
+                          <Text style={{ color: 'blue', marginTop: 20 }}>Registrarse en su lugar</Text>
+                      </Link>
                     </Text>
                     <Ionicons name="sunny-outline" size={24} color="#333" />
                   </View>
