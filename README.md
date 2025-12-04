@@ -1,7 +1,7 @@
-#🚀 DigiCurva: Marketplace Digital Móvil
+# 🚀 DigiCurva: Marketplace Digital Móvil
 DigiCurva es una aplicación móvil de marketplace digital diseñada para conectar compradores y vendedores de manera fluida y eficiente. Construida con React Native, esta aplicación ofrece una experiencia de usuario nativa en plataformas iOS y Android, aprovechando el ecosistema de JavaScript para un desarrollo rápido y un alto rendimiento.
 
-##🌟 Características Principales
+## 🌟 Características Principales
 Experiencia Multiplataforma: Desarrollo con un único código base en React Native para garantizar la compatibilidad total con iOS y Android.
 
 Interfaz Intuitiva (UI/UX): Diseño centrado en el usuario para una navegación sencilla a través de las categorías de productos, perfiles de vendedores y el proceso de compra.
@@ -18,7 +18,7 @@ Carrito de Compras y Checkout: Proceso de compra optimizado y seguro.
 
 Tecnología de Vanguardia: Utilización de las últimas funcionalidades y librerías de React Native para asegurar escalabilidad y mantenibilidad.
 
-##🛠️ Stack Tecnológico
+## 🛠️ Stack Tecnológico
 Framework: React Native
 
 Lenguaje: JavaScript (ES6+)
@@ -31,7 +31,7 @@ Estilado: (Menciona si usas Styled Components, Tailwind CSS, o hojas de estilo n
 
 Backend / API: (Menciona si te conectas a una API REST, GraphQL, o un servicio como Firebase)
 
-##💻 Instalación y Ejecución Local
+## 💻 Instalación y Ejecución Local
 Para clonar y ejecutar este proyecto en tu entorno local, sigue los siguientes pasos:
 
 Clona el repositorio:
@@ -52,5 +52,5 @@ Para Android: npx react-native run-android
 
 Para iOS: npx react-native run-ios (Requiere un entorno de desarrollo de macOS)
 
-🤝 Contribuciones
+## 🤝 Contribuciones
 Agradecemos cualquier contribución. Por favor, consulta CONTRIBUTING.md (si lo tienes) para más detalles sobre el proceso.
