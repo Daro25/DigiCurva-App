@@ -1,13 +1,17 @@
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 
 export default function TabLayout() {
   return (
-    <Tabs>
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="login" options={{ title: 'Login' }} />
-      <Tabs.Screen name="registro" options={{ title: 'Registro' }} />
-      <Tabs.Screen name='producto' options={{title: 'Producto'}} />
-      <Tabs.Screen name='carrito' options={{title: 'Carrito'}} />
-    </Tabs>
+    <Stack>
+      <Stack.Screen name="index" options={{ title: 'Home' , headerShown: false}} />
+      <Stack.Screen name="login" options={{ title: 'Login' , headerShown: false }} />
+      <Stack.Screen name="registro" options={{ title: 'Registro' , headerShown: false}} />
+      <Stack.Screen name="producto" options={{ title: 'Producto' , headerShown: false }} />
+      
+      <Stack.Screen name="Anuncio" options={{ title: 'Anuncio' , headerShown: false }} />
+      {/* El Stack que envuelve a los Tabs también debe ocultar su header */}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+      
   );
 }

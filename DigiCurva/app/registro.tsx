@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
 import { 
   StyleSheet, 
   Text, 
@@ -9,8 +10,10 @@ import {
   useWindowDimensions, 
   Platform,
   ScrollView,
+  Image,
   Alert,
-  KeyboardTypeOptions // Importante para tipar el teclado
+  KeyboardTypeOptions, // Importante para tipar el teclado
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons'; 
 
@@ -26,6 +29,7 @@ interface UserFormData {
   numeroCasa: string;
   localidad: string;
   contraseña: string;
+  fotoUrl?: string; // Opcional, para la URL de la imagen subida
 }
 
 // 2. Definimos qué props recibe el componente InputGroup
@@ -34,12 +38,113 @@ interface InputGroupProps {
   id: string;
   value: string;
   onChangeText: (text: string) => void;
-  keyboardType?: KeyboardTypeOptions;
+  keyboardType?: KeyboardTypeOptions; 
+  secureTextEntry?: boolean;
 }
 
 const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
-
+const ICON = require('@/assets/images/icon.png');
 export default function Registro() {
+  //=============================Imagenes=============================
+  // Estado para la foto (puede ser null, cargando, o la URL final)
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // 1. Función para seleccionar imagen (Galería o Cámara)
+  const pickImage = async (useCamera: boolean) => {
+    // Pedir permisos
+    if (useCamera) {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Se necesitan permisos de cámara');
+        return;
+      }
+    } else {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Se necesitan permisos de galería');
+        return;
+      }
+    }
+
+    // Abrir selector
+    let result = await (useCamera 
+      ? ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.7, // Comprimir un poco para subir rápido
+        })
+      : ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.7,
+        })
+    );
+
+    if (!result.canceled) {
+      // Mostrar la imagen localmente primero
+      setPhotoUri(result.assets[0].uri);
+      // Subir inmediatamente a tu API PHP
+      //uploadToPHP(result.assets[0].uri);
+    }
+  };
+
+  // 2. Función que conecta con tu API PHP
+  const uploadToPHP = async (localUri: string) => {
+    setUploading(true);
+    const apiUrl = 'https://ljusstudie.site/SubirImagenBucker/subirImage.php'; // <--- PON TU URL AQUÍ
+
+    // Preparar el nombre del archivo
+    let filename = localUri.split('/').pop();
+
+    // Inferir el tipo de archivo (jpeg/png)
+    let match = /\.(\w+)$/.exec(filename || '');
+    let type = match ? `image/${match[1]}` : `image`;
+
+    // Crear el FormData (Esto es lo que lee $_FILES en PHP)
+    const formData = new FormData();
+    
+    // @ts-ignore: React Native espera un objeto especial para archivos
+    formData.append('image', { 
+      uri: localUri, 
+      name: filename || 'photo.jpg', 
+      type: type 
+    });
+
+    // Opcional: Si quieres enviar el 'name' que tu PHP acepta
+    formData.append('name', 'foto_perfil_' + Date.now() + '.jpg');
+
+    try {
+      console.log("Subiendo a...", apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data', // Importante para PHP
+        },
+      });
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        console.log("Imagen subida con éxito:", responseData);
+        alert("Imagen guardada en la nube");
+        // Aquí podrías guardar responseData.url en tu formData principal si lo necesitas
+        handleChange('fotoUrl', responseData.url); 
+      } else {
+        alert("Error del servidor: " + (responseData.error || 'Desconocido'));
+      }
+
+    } catch (error) {
+      console.error("Error de red:", error);
+      alert("Error al subir la imagen");
+    } finally {
+      setUploading(false);
+    }
+  };
+  //=============================Fin Imagenes=============================
   // --- ESTADO INICIAL ---
   // 3. Indicamos explícitamente que el estado usa la interfaz UserFormData
   const [formData, setFormData] = useState<UserFormData>({
@@ -63,12 +168,14 @@ export default function Registro() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.nombres || !formData.email) {
+    if (!formData.nombres || !formData.email || !formData.contraseña || !formData.telefono || !formData.calle || !formData.numeroCasa || !formData.localidad) {
       if (Platform.OS === 'web') alert("Complete campos obligatorios");
       else Alert.alert("Error", "Complete campos obligatorios");
       return;
     }
-
+    if (photoUri && !formData.fotoUrl){
+      await uploadToPHP(photoUri);
+    }
     try {
       const baseUrl = 'https://ljusstudie.site/DigiCurvaServer/registro.php';
       
@@ -77,7 +184,8 @@ export default function Registro() {
         correo: formData.email,
         telefono: formData.telefono,
         direccion: formData.calle +','+ formData.numeroCasa +','+ formData.localidad,
-        contrasena_hash: formData.contraseña
+        contrasena_hash: formData.contraseña,
+        foto_perfil_url: formData.fotoUrl || ''
       });
 
       const finalUrl = `${baseUrl}?${params.toString()}`;
@@ -101,9 +209,7 @@ export default function Registro() {
         {/* HEADER */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <View style={styles.logoIcon}>
-               <View style={styles.logoDot} />
-            </View>
+            <Image source={ICON} style={styles.logoIcon}/>
             <Text style={styles.logoText}>DigiCurva</Text>
           </View>
           <View style={styles.navLinks}>
@@ -199,18 +305,39 @@ export default function Registro() {
                   secureTextEntry={true} // <--- Agrega esta línea
                 />
                 
-                {/* FOTO UI */}
+                {/* FOTO UI CONECTADA */}
                 <Text style={styles.label}>Foto (opcional)</Text>
                 <View style={styles.photoSection}>
+                  
+                  {/* Círculo de previsualización */}
                   <View style={styles.photoPlaceholder}>
-                    <Ionicons name="person-outline" size={40} color="#333" />
+                    {uploading ? (
+                       <ActivityIndicator color="#333" />
+                    ) : photoUri ? (
+                       // Si hay foto, la mostramos. Si no, mostramos el icono
+                       <Image 
+                         source={{ uri: photoUri }} 
+                         style={{ width: '100%', height: '100%', borderRadius: 8 }} 
+                       />
+                    ) : (
+                       <Ionicons name="person-outline" size={40} color="#333" />
+                    )}
                   </View>
                   
                   <View style={styles.photoActions}>
-                    <TouchableOpacity style={styles.cameraButton}>
+                    {/* Botón CÁMARA */}
+                    <TouchableOpacity 
+                      style={styles.cameraButton}
+                      onPress={() => pickImage(true)} // true = usar cámara
+                    >
                       <Ionicons name="camera-outline" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.fileButton}>
+
+                    {/* Botón ARCHIVO/GALERÍA */}
+                    <TouchableOpacity 
+                      style={styles.fileButton}
+                      onPress={() => pickImage(false)} // false = usar galería
+                    >
                        <MaterialIcons name="note-add" size={24} color="#fff" />
                     </TouchableOpacity>
                   </View>
@@ -229,14 +356,6 @@ export default function Registro() {
       {/* Fin Overlay */}
     </ImageBackground>
   );
-}
-interface InputGroupProps {
-  label: string;
-  id: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  keyboardType?: KeyboardTypeOptions; 
-  secureTextEntry?: boolean; // <--- ¡ESTA LÍNEA ES LA QUE TE FALTA!
 }
 // --- COMPONENTE AUXILIAR TIPADO ---
 const InputGroup = ({ label, id, value, onChangeText, keyboardType = 'default', secureTextEntry = false}: InputGroupProps) => (
@@ -283,15 +402,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-  },
-  logoDot: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#60a5fa',
-    borderRadius: 5,
-    position: 'absolute',
-    top: 5,
-    right: 5
   },
   logoText: {
     fontSize: 28,

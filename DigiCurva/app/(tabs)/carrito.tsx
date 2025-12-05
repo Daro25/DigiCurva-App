@@ -47,7 +47,8 @@ const MOCK_CART_ITEMS: CartItem[] = [
 ];
 
 // Imagen de fondo del header (Local o remota, usaremos remota para el ejemplo portable)
-const HEADER_BG = { uri: 'https://images.unsplash.com/photo-1568218151240-6d4277b21e86?q=80&w=1920&auto=format&fit=crop' };
+const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
+const ICON = require('@/assets/images/icon.png');
 
 export default function Carrito() {
   // --- ESTADOS ---
@@ -126,9 +127,13 @@ export default function Carrito() {
       <StatusBar barStyle="light-content" />
 
       {/* --- HEADER (Con fondo de imagen como en el diseño original) --- */}
-      <ImageBackground source={HEADER_BG} style={styles.headerBackground} resizeMode="cover">
+      <ImageBackground source={BACKGROUND_IMAGE} style={styles.headerBackground} resizeMode="cover">
         <View style={styles.headerOverlay}>
           <View style={[styles.headerContent, { maxWidth: 1200 }]}>
+            <Image 
+            source={ICON}
+            style={styles.logoImage}
+          />
             <Text style={styles.logoText}>DigiCurva</Text>
             
             {isDesktop && (
@@ -287,6 +292,10 @@ const styles = StyleSheet.create({
     width: '95%',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  logoImage: {
+    width: 30,
+    height: 30,
   },
   logoText: {
     fontSize: 28,
