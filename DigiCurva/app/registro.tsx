@@ -15,6 +15,8 @@ import {
   KeyboardTypeOptions, // Importante para tipar el teclado
   ActivityIndicator
 } from 'react-native';
+import { useRouter} from 'expo-router';
+import { SesionUsuario } from '@/utils/SesionUsuario';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons'; 
 
 // --- DEFINICIONES DE TIPOS (INTERFACES) ---
@@ -45,6 +47,7 @@ interface InputGroupProps {
 const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
 const ICON = require('@/assets/images/icon.png');
 export default function Registro() {
+  const router = useRouter();
   //=============================Imagenes=============================
   // Estado para la foto (puede ser null, cargando, o la URL final)
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -168,14 +171,18 @@ export default function Registro() {
   };
 
   const handleSubmit = async () => {
+    // 1. VALIDACIÓN
     if (!formData.nombres || !formData.email || !formData.contraseña || !formData.telefono || !formData.calle || !formData.numeroCasa || !formData.localidad) {
       if (Platform.OS === 'web') alert("Complete campos obligatorios");
       else Alert.alert("Error", "Complete campos obligatorios");
       return;
     }
+    
+    // 2. SUBIDA DE FOTO (Si aplica)
     if (photoUri && !formData.fotoUrl){
       await uploadToPHP(photoUri);
     }
+    
     try {
       const baseUrl = 'https://ljusstudie.site/DigiCurvaServer/registro.php';
       
@@ -183,24 +190,66 @@ export default function Registro() {
         nombre: formData.nombres + ' ' + formData.apellidos,
         correo: formData.email,
         telefono: formData.telefono,
+        // Nota: Pasar la contraseña directamente en la URL (GET) es inseguro.
+        // Se recomienda usar POST y enviar datos en el cuerpo.
+        contrasena_hash: formData.contraseña, 
         direccion: formData.calle +','+ formData.numeroCasa +','+ formData.localidad,
-        contrasena_hash: formData.contraseña,
         foto_perfil_url: formData.fotoUrl || ''
       });
 
       const finalUrl = `${baseUrl}?${params.toString()}`;
       console.log('Enviando a:', finalUrl);
 
-      if (Platform.OS === 'web') {
-        alert(`URL Generada:\n${finalUrl}`);
+      // 3. REALIZAR LA PETICIÓN A LA API
+      const response = await fetch(finalUrl);
+      const data = await response.json(); // Asume que la API responde con JSON
+
+      // 4. MANEJO DE RESPUESTA
+      if (data && data.id_usuario) {
+        // Registro Exitoso
+        
+        // ==========================================
+        // 👇 BLOQUE EDITABLE: LÓGICA DE ÉXITO
+        // ==========================================
+        
+        console.log("Registro exitoso. ID del nuevo usuario:", data.id_usuario);
+        // Ejemplo de alerta:
+        if (Platform.OS === 'web') alert(`¡Registro completado! ID: ${data.id_usuario}`);
+        else Alert.alert("Éxito", `¡Registro completado! ID: ${data.id_usuario}`);
+
+        if (data.usuario_id) {
+                SesionUsuario.setId(data.usuario_id);
+                router.replace('/'); 
+              }
+
+        // ==========================================
+        // 👆 FIN BLOQUE EDITABLE
+        // ==========================================
+
       } else {
-        Alert.alert("API Request", `POST a:\n${finalUrl}`);
+        // Registro Fallido (La API debe devolver un campo de error o un mensaje)
+        // ==========================================
+        // 👇 BLOQUE EDITABLE: LÓGICA DE FALLO
+        // ==========================================
+        
+        const errorMessage = data.mensaje || "Error desconocido al registrar usuario.";
+        console.error("Fallo en el registro:", errorMessage);
+        
+        if (Platform.OS === 'web') alert(`Error al registrar: ${errorMessage}`);
+        else Alert.alert("Error de Registro", errorMessage);
+
+        // ==========================================
+        // 👆 FIN BLOQUE EDITABLE
+        // ==========================================
       }
 
     } catch (error) {
-      console.error(error);
+      // Error de red, JSON inválido o cualquier otro error en el fetch
+      console.error("Error en la petición:", error);
+      if (Platform.OS === 'web') alert("Error de conexión con el servidor.");
+      else Alert.alert("Error", "No se pudo conectar con el servidor.");
     }
-  };
+};
 
   return (
     <ImageBackground source={BACKGROUND_IMAGE} style={styles.container} resizeMode="cover">

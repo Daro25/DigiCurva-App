@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
+import { useRouter, useRootNavigationState} from 'expo-router';
+import { SesionUsuario } from '@/utils/SesionUsuario';
 
 // --- 1. DEFINICIÓN DE TIPOS (TypeScript) ---
 
@@ -46,6 +48,37 @@ const ICON = require('@/assets/images/icon.png');
 const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
 
 export default function Index() {
+  const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
+
+  // Esta función se ejecuta AUTOMÁTICAMENTE al cargar el componente
+  useEffect(() => {
+    // 1. Si la navegación no está lista, no iniciamos el temporizador aún
+    if (!rootNavigationState?.key) return;
+    // 2. Iniciamos el temporizador de 3 segundos (3000 ms)
+    const timer = setTimeout(() => {
+      verificarSesion();
+    }, 3000);
+    // 3. Limpieza: Cancelar el timer si el componente se desmonta antes de los 3 seg
+    return () => clearTimeout(timer);
+  }, [rootNavigationState?.key]);
+
+  const verificarSesion = () => {
+    // 4. BLOQUEO DE SEGURIDAD:
+    // Si la navegación no está lista (no tiene key), no hacemos nada todavía.
+    if (!rootNavigationState?.key) return; 
+
+    console.log("--- Iniciando App: Verificando Sesión ---");
+    
+    const idUsuario = SesionUsuario.getId();
+
+    if (!idUsuario) {
+      console.log("No hay usuario. Redirigiendo a Login...");
+      router.replace('/login'); 
+    } else {
+      console.log(`Usuario autenticado: ${idUsuario}. Cargando contenido...`);
+    }
+  };
   // --- ESTADOS DE DATOS ---
   const [banners, setBanners] = useState<Banner[]>([]);
   const [ofertas, setOfertas] = useState<Product[]>([]);

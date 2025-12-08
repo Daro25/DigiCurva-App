@@ -15,11 +15,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Iconos estándar en Expo
 import { Link } from 'expo-router';
+import { useRouter} from 'expo-router';
+import { SesionUsuario } from '@/utils/SesionUsuario';
 
 // URL de la imagen de fondo (Usamos una similar de Unsplash para la demo)
 const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
 
 export default function Login() {
+  const router = useRouter();
   // Hooks de estado para los inputs
   const [identifier, setIdentifier] = useState(''); // ID: input_identifier
   const [password, setPassword] = useState('');     // ID: input_password
@@ -65,7 +68,10 @@ export default function Login() {
       const data = await response.json();
       console.log('Respuesta:', data);
       alert(`Petición enviada exitosamente a: \n${finalUrl}`);
-
+      if (data.usuario_id) {
+        SesionUsuario.setId(data.usuario_id);
+        router.replace('/'); 
+      }
     } catch (error) {
       console.error(error);
       // Simulamos éxito para la demo visual si la API fake falla
