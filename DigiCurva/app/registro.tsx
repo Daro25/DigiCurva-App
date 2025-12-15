@@ -106,27 +106,24 @@ export default function Registro() {
     let type = match ? `image/${match[1]}` : `image`;
 
     // Crear el FormData (Esto es lo que lee $_FILES en PHP)
-    const formData = new FormData();
+    const _formData = new FormData();
     
     // @ts-ignore: React Native espera un objeto especial para archivos
-    formData.append('image', { 
+    _formData.append('image', { 
       uri: localUri, 
       name: filename || 'photo.jpg', 
       type: type 
     });
 
     // Opcional: Si quieres enviar el 'name' que tu PHP acepta
-    formData.append('name', 'foto_perfil_' + Date.now() + '.jpg');
+    _formData.append('name', 'foto_perfil_' + Date.now() + '.jpg');
 
     try {
       console.log("Subiendo a...", apiUrl);
       
       const response = await fetch(apiUrl, {
         method: 'POST',
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data', // Importante para PHP
-        },
+        body: _formData,
       });
 
       const responseData = await response.json();
@@ -136,8 +133,10 @@ export default function Registro() {
         alert("Imagen guardada en la nube");
         // Aquí podrías guardar responseData.url en tu formData principal si lo necesitas
         handleChange('fotoUrl', responseData.url); 
+        return responseData.url;
       } else {
         alert("Error del servidor: " + (responseData.error || 'Desconocido'));
+        return '';
       }
 
     } catch (error) {
@@ -172,82 +171,85 @@ export default function Registro() {
 
   const handleSubmit = async () => {
     // 1. VALIDACIÓN
+    var imageurl = '';
     if (!formData.nombres || !formData.email || !formData.contraseña || !formData.telefono || !formData.calle || !formData.numeroCasa || !formData.localidad) {
-      if (Platform.OS === 'web') alert("Complete campos obligatorios");
-      else Alert.alert("Error", "Complete campos obligatorios");
-      return;
+        if (Platform.OS === 'web') alert("Complete campos obligatorios");
+        else Alert.alert("Error", "Complete campos obligatorios");
+        return;
     }
-    
-    // 2. SUBIDA DE FOTO (Si aplica)
-    if (photoUri && !formData.fotoUrl){
-      await uploadToPHP(photoUri);
+
+    // 2. SUBIDA DE FOTO
+    // Importante: Asegúrate de que uploadToPHP actualice el estado o devuelve la URL.
+    // Si uploadToPHP es asíncrono, esperamos a que termine antes de armar el JSON.
+    if (photoUri && !formData.fotoUrl) {
+        imageurl = await uploadToPHP(photoUri);
+        // Nota: Si uploadToPHP actualiza el estado 'formData', React podría no reflejarlo 
+        // instantáneamente en esta misma ejecución. Lo ideal sería que uploadToPHP 
+        // devolviera la URL string y la usaras aquí.
     }
-    
+
     try {
-      const baseUrl = 'https://ljusstudie.site/DigiCurvaServer/registro.php';
-      
-      const params = new URLSearchParams({
-        nombre: formData.nombres + ' ' + formData.apellidos,
-        correo: formData.email,
-        telefono: formData.telefono,
-        // Nota: Pasar la contraseña directamente en la URL (GET) es inseguro.
-        // Se recomienda usar POST y enviar datos en el cuerpo.
-        contrasena_hash: formData.contraseña, 
-        direccion: formData.calle +','+ formData.numeroCasa +','+ formData.localidad,
-        foto_perfil_url: formData.fotoUrl || ''
-      });
+        const apiUrl = 'https://ljusstudie.site/DigiCurvaServer/registro.php';
 
-      const finalUrl = `${baseUrl}?${params.toString()}`;
-      console.log('Enviando a:', finalUrl);
+        // Preparamos el objeto con los datos limpios
+        const url = `https://ljusstudie.site/DigiCurvaServer/registro.php?nombre=${encodeURIComponent(formData.nombres + ' ' + formData.apellidos)}&correo=${encodeURIComponent(formData.email)}&contrasena_hash=${encodeURIComponent(formData.contraseña)}&telefono=${encodeURIComponent(formData.telefono)}&direccion=${encodeURIComponent(formData.calle + ', ' + formData.numeroCasa + ', ' + formData.localidad)}&foto_perfil_url=${encodeURIComponent(imageurl || '')}`;
+        /*const _formData = new FormData();
+        _formData.append('nombre', formData.nombres + ' ' + formData.apellidos);
+        _formData.append('correo', formData.email);
+        _formData.append('contrasena_hash', formData.contraseña);
+        _formData.append('telefono', formData.telefono);
+        _formData.append('direccion', `${formData.calle}, ${formData.numeroCasa}, ${formData.localidad}`);
+        _formData.append('foto_perfil_url', imageurl || '');
 
-      // 3. REALIZAR LA PETICIÓN A LA API
-      const response = await fetch(finalUrl);
-      const data = await response.json(); // Asume que la API responde con JSON
-
-      // 4. MANEJO DE RESPUESTA
-      if (data && data.id_usuario) {
-        // Registro Exitoso
+        console.log('Enviando datos (POST):', _formData);
+        // 3. REALIZAR LA PETICIÓN POST
+        const response = await fetch(apiUrl, {
+            method: 'POST', // <--- CAMBIO CRUCIAL
+            headers: {
+                'Content-Type': 'application/json', // Indicamos que enviamos JSON
+                'Accept': 'application/json'
+            },
+            body: _formData // Convertimos el objeto a texto JSON
+        });*/
+        console.log(url);
         
-        // ==========================================
-        // 👇 BLOQUE EDITABLE: LÓGICA DE ÉXITO
-        // ==========================================
-        
-        console.log("Registro exitoso. ID del nuevo usuario:", data.id_usuario);
-        // Ejemplo de alerta:
-        if (Platform.OS === 'web') alert(`¡Registro completado! ID: ${data.id_usuario}`);
-        else Alert.alert("Éxito", `¡Registro completado! ID: ${data.id_usuario}`);
+        const response = await fetch(url);
 
-        if (data.usuario_id) {
-                SesionUsuario.setId(data.usuario_id);
-                router.replace('/'); 
-              }
+        // 4. MANEJO DE RESPUESTA
+        const data = await response.json();
+        console.log("Respuesta del servidor:", data);
 
-        // ==========================================
-        // 👆 FIN BLOQUE EDITABLE
-        // ==========================================
+        if (data && (data.id_usuario || data.success)) {
+            // ==========================================
+            // 👇 LÓGICA DE ÉXITO
+            // ==========================================
+            console.log("Registro exitoso. ID:", data.id_usuario);
+            
+            if (Platform.OS === 'web') alert(`¡Registro completado!`);
+            else Alert.alert("Éxito", `¡Registro completado!`);
 
-      } else {
-        // Registro Fallido (La API debe devolver un campo de error o un mensaje)
-        // ==========================================
-        // 👇 BLOQUE EDITABLE: LÓGICA DE FALLO
-        // ==========================================
-        
-        const errorMessage = data.mensaje || "Error desconocido al registrar usuario.";
-        console.error("Fallo en el registro:", errorMessage);
-        
-        if (Platform.OS === 'web') alert(`Error al registrar: ${errorMessage}`);
-        else Alert.alert("Error de Registro", errorMessage);
+            if (data.id_usuario) {
+                // Asegúrate que tu API devuelve 'id_usuario' o 'usuario_id' y sé consistente
+                SesionUsuario.setId(data.id_usuario);
+                router.replace('/');
+            }
+            // ==========================================
+        } else {
+            // ==========================================
+            // 👇 LÓGICA DE FALLO
+            // ==========================================
+            const errorMessage = data.error || data.mensaje || "Error desconocido.";
+            console.error("Fallo en el registro:", errorMessage);
 
-        // ==========================================
-        // 👆 FIN BLOQUE EDITABLE
-        // ==========================================
-      }
+            if (Platform.OS === 'web') alert(`Error: ${errorMessage}`);
+            else Alert.alert("Error de Registro", errorMessage);
+            // ==========================================
+        }
 
     } catch (error) {
-      // Error de red, JSON inválido o cualquier otro error en el fetch
-      console.error("Error en la petición:", error);
-      if (Platform.OS === 'web') alert("Error de conexión con el servidor.");
-      else Alert.alert("Error", "No se pudo conectar con el servidor.");
+        console.error("Error en la petición:", error);
+        if (Platform.OS === 'web') alert("Error de conexión con el servidor.");
+        else Alert.alert("Error", "No se pudo conectar con el servidor.");
     }
 };
 

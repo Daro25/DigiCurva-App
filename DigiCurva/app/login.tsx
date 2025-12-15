@@ -53,16 +53,18 @@ export default function Login() {
       });
 
       const finalUrl = `${baseUrl}?${params.toString()}`;
-
+      const _formData = new FormData();
+      _formData.append('correo', identifier);
+      _formData.append('contrasena', password);
       console.log('Enviando POST a:', finalUrl); 
 
       const response = await fetch(finalUrl, {
         method: 'POST', // Método solicitado
-        headers: {
+        /*headers: {
           'Content-Type': 'application/json',
-          // 'Accept': 'application/json'
-        },
-        // BODY VACÍO intencionalmente según requerimiento
+          'Accept': 'application/json'
+        },*/
+        body: _formData
       });
 
       const data = await response.json();

@@ -18,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import ImageColors from 'react-native-image-colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useRouter, useRootNavigationState} from 'expo-router';
 // Si configuraste el alias '@' en tu tsconfig.json
 import { SesionUsuario } from '../utils/SesionUsuario';
 
@@ -41,7 +42,8 @@ const ICON = require('@/assets/images/icon.png');
 const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
 
 export default function Anuncio() {
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const router = useRouter();
+  const [photoUri, setPhotoUri] = useState<string>('');
   const [textColor, setTextColor] = useState<string>('#000');
   const [adTitle, setAdTitle] = useState('Titulo de anuncio');
   const [adDescription, setAdDescription] = useState('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
@@ -181,7 +183,7 @@ export default function Anuncio() {
     const formData = new FormData();
     formData.append('image', {
       uri: localUri,
-      name: filename || 'foto.jpg',
+      name: finalName || 'foto.jpg',
       type: type
     } as any);
 
@@ -199,34 +201,67 @@ export default function Anuncio() {
     }
 
     console.log("URL de imagen recibida:", json.url);
-    return json.url;
+    return json.url || photoUri;
   };
 
   // PASO 2: Crear el registro en BD con la URL de la imagen
-  const step2_createAdRecord = async (idhj : number,imageUrl: string | null, title: string, desc: string): Promise<number> => {
+  const step2_createAdRecord = async (idhj : number,imageUrl: string | null, title: string, desc: string, costo : string): Promise<number> => {
     console.log("--- INICIANDO PASO 2: CREAR REGISTRO ---");
     const fechas = calcularFechasPlan(idhj);
-    const idUsuario = SesionUsuario.getId();
-    // Aquí enviamos un JSON o FormData (usaré FormData para ser consistente con PHP $_POST simple)
-    const formData = new FormData();
-    formData.append('titulo', title);
-    formData.append('mensaje', desc);
-    formData.append('usuario_id', idUsuario.toString());
-    formData.append('fecha_inicio', fechas.fecha_inicio);
-    formData.append('fecha_fin', fechas.fecha_fin);
-    formData.append('url_imagen', imageUrl || ''); // Enviamos la URL que obtuvimos en paso 1
+const idUsuario = SesionUsuario.getId();
+// Aquí usamos un objeto simple para facilitar la codificación
+const data = {
+    titulo: title,
+    mensaje: desc,
+    // Aseguramos que sea una cadena, con '1' como fallback
+    usuario_id: idUsuario.toString() || '1', 
+    fecha_inicio: fechas.fecha_inicio,
+    fecha_fin: fechas.fecha_fin,
 
-    const response = await fetch(URL_CREAR_ANUNCIO, {
-      method: 'POST',
-      body: formData,
-      // Si usas FormData, no pongas 'Content-Type': 'application/json'
-    });
+    // Enviamos la URL que obtuvimos en paso 1
+    url_imagen: imageUrl || photoUri || '', 
+    // Añadir cualquier otro dato que el endpoint PHP necesite
+    costo: costo // Ejemplo
+};
+
+// 1. Convertir el objeto de datos a una cadena de consulta codificada (GET)
+const params = new URLSearchParams(data).toString();
+
+// 2. Construir la URL final con los parámetros
+const finalUrl = `${URL_CREAR_ANUNCIO}?${params}`;
+console.log('URL de Petición GET:', finalUrl);
+//FormData para ser consistente con PHP $_POST simple)
+
+    const formData = new FormData();
+
+    formData.append('titulo', title);
+
+    formData.append('mensaje', desc);
+
+    formData.append('usuario_id', idUsuario.toString()||'1');
+
+    formData.append('fecha_inicio', fechas.fecha_inicio);
+
+    formData.append('fecha_fin', fechas.fecha_fin);
+    formData.append('costo', costo);
+    formData.append('url_imagen', imageUrl || photoUri||''); // Enviamos la URL que obtuvimos en paso 1
+// 3. Realizar la petición GET (sin cuerpo)
+const response = await fetch(finalUrl, {
+    method: 'POST', // Cambiamos explícitamente a GET
+    body: formData,
+    // NO se necesita el 'body' ni los headers 'Content-Type' para GET
+});
+
+// A partir de aquí, tu script PHP debe usar filter_input(INPUT_GET, ...) para leer los datos.
 
     const json = await response.json();
+    console.log(json);
 
     // Asumimos que el PHP devuelve: { "id_anuncio": 123 }
     if (!response.ok || !json.id_anuncio) {
       throw new Error(json.error || 'Error al guardar los datos del anuncio');
+    } else {
+
     }
 
     console.log("ID Anuncio creado:", json.id_anuncio);
@@ -276,28 +311,30 @@ function calcularFechasPlan (planId: number) {
     console.log("--- INICIANDO PASO 3: OBTENER LINK PAGO ---");
 
     const payload = {
-      id_anuncio: adId,
-      precio: plan.price,
-      plan_id: plan.id
-    };
-
+      id_anuncio: adId.toString(),
+      precio: plan.price.toString(),
+      plan_id: plan.id.toString()
+  };
+  const formData = new FormData();
+    formData.append('id_anuncio', adId.toString());
+    formData.append('precio',plan.price.toString());
+  // 1. Convertir el objeto payload a una cadena de consulta codificada (GET)
+  const params = new URLSearchParams(payload).toString();
+  // 2. Construir la URL final
+  const finalUrl = `${URL_PROCESAR_PAGO}?${params}`;
+  console.log('URL de Pago (GET):', finalUrl);
     const response = await fetch(URL_PROCESAR_PAGO, {
       method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'application/json' },
+      body: formData,
     });
-
     const json = await response.json();
-
     // Asumimos que el PHP devuelve: { "paypal_link": "https://paypal.com/..." }
     if (!response.ok || !json.paypal_link) {
       throw new Error(json.error || 'No se pudo generar el link de pago');
     }
-
     console.log("Link de pago recibido:", json.paypal_link);
     return json.paypal_link;
   };
-
   // --- FUNCIÓN ORQUESTADORA (MASTER) ---
   const handleCreateAndPay = async (plan: Plan) => {
     // 1. Validaciones Locales
@@ -305,23 +342,19 @@ function calcularFechasPlan (planId: number) {
       Alert.alert('Atención', 'Por favor llena el título y la descripción.');
       return;
     }
-
     setSubmitting(true);
-
     try {
       let finalImageUrl: string | null = null;
-
       // 1. Ejecutar Paso 1 (Solo si hay foto seleccionada)
-      if (photoUri) {
-        finalImageUrl = await step1_uploadImage(photoUri);
-      }
-
+      try {if (photoUri) {finalImageUrl = await step1_uploadImage(photoUri);}} catch (error) {}
       // 2. Ejecutar Paso 2 (Crear registro usando la URL de la imagen)
-      const newAdId = await step2_createAdRecord(plan.id, finalImageUrl, adTitle, adDescription);
-
+      const newAdId = await step2_createAdRecord(plan.id, finalImageUrl || photoUri, adTitle, adDescription, plan.price.toString());
       // 3. Ejecutar Paso 3 (Obtener link de pago con el ID del anuncio)
+      try {
       const paymentLink = await step3_getPaymentLink(newAdId, plan);
-
+      } catch (error) {
+        
+      }
       // 4. Abrir el navegador con el link
       Alert.alert(
         'Redirigiendo',
@@ -330,7 +363,8 @@ function calcularFechasPlan (planId: number) {
           { 
             text: 'Ir a Pagar', 
             onPress: () => {
-              Linking.openURL(paymentLink).catch(err => console.error("No se pudo abrir link", err));
+              router.replace('/paypal');
+              //Linking.openURL(paymentLink).catch(err => console.error("No se pudo abrir link", err));
             }
           }
         ]
@@ -381,7 +415,9 @@ function calcularFechasPlan (planId: number) {
     setPlans(mockData);
     setLoading(false);
   }, []);
-
+console.log('user:    ',SesionUsuario.getId());
+const idUsuario = SesionUsuario.getId();
+SesionUsuario.setId(idUsuario); // Aseguramos que el ID esté seteado globalmente
   return (
     <ImageBackground source={BACKGROUND_IMAGE} style={styles.background} resizeMode="cover">
       <LinearGradient colors={['rgba(135, 206, 250, 0.6)', 'rgba(135, 206, 235, 0.4)']} style={StyleSheet.absoluteFill} />
@@ -394,7 +430,8 @@ function calcularFechasPlan (planId: number) {
             <Image source={ICON} style={styles.logoIcon}/>
             <Text style={styles.logoText}>DigiCurva</Text>
           </View>
-          <Text style={styles.navLink}>Home</Text>
+          <TouchableOpacity onPress={()=>{router.replace('/')}}>
+          <Text style={styles.navLink}>Home</Text></TouchableOpacity>
         </View>
 
         <Text style={styles.pageTitle}>Crea un anuncio</Text>
@@ -434,6 +471,10 @@ function calcularFechasPlan (planId: number) {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Descripción:</Text>
               <TextInput style={[styles.input, styles.textArea]} placeholder="Descripción..." value={adDescription} onChangeText={setAdDescription} multiline numberOfLines={4} editable={!submitting} />
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>url:</Text>
+              <TextInput style={[styles.input]} placeholder="Descripción..." value={photoUri} onChangeText={setPhotoUri} editable={!submitting} />
             </View>
           </View>
         </View>
@@ -502,7 +543,7 @@ const styles = StyleSheet.create({
   previewTitle: { fontSize: 22, fontFamily: 'serif', fontWeight: 'bold' },
   previewImagePlaceholder: { alignSelf: 'center', width: 80, height: 60, borderWidth: 2, borderColor: '#fff', borderRadius: 10, justifyContent: 'center', alignItems: 'center', opacity: 0.8 },
   previewDesc: { fontSize: 16, fontFamily: 'serif' },
-  formCard: { flex: 1, minWidth: 300, backgroundColor: '#fff', borderRadius: 20, padding: 20, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, height: 250 },
+  formCard: { flex: 1, minWidth: 300, backgroundColor: '#fff', borderRadius: 20, padding: 20, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, height: 300 },
   inputGroup: { marginBottom: 20, flexDirection: 'row', alignItems: 'flex-start' },
   label: { fontWeight: 'bold', width: 80, marginTop: 15, fontSize: 14, color: '#333' },
   input: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 15, fontSize: 14, color: '#000', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, borderWidth: 0.5, borderColor: '#eee' },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -12,19 +12,22 @@ import {
   ActivityIndicator, 
   Alert,
   SafeAreaView,
-  StatusBar
+  StatusBar, 
+  FlatList,
+  ViewToken
 } from 'react-native';
-import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import { useRouter, useRootNavigationState} from 'expo-router';
 import { SesionUsuario } from '@/utils/SesionUsuario';
 
-// --- 1. DEFINICIÓN DE TIPOS (TypeScript) ---
+// --- 1. DEFINICIÓN DE TIPOS (Adaptados para API y UI) ---
 
+// Interfaz para lo que consume la UI
 interface Product {
   id: string;
   title: string;
-  condition: 'Nuevo' | 'Usado';
+  //condition: 'Nuevo' | 'Usado';
   price: number;
   image: string;
 }
@@ -36,53 +39,32 @@ interface Banner {
   subtitle: string;
 }
 
+interface UserProfile {
+  nombre: string;
+  avatar: string;
+}
+
 // --- 2. CONFIGURACIÓN Y CONSTANTES ---
 
-const API_BASE = 'https://api.digicurva.com';
-const HEADER_BG_COLOR = '#E1F5FE'; // Azul claro fiel al diseño
+const API_BASE_URL = 'https://ljusstudie.site/DigiCurvaServer';
+const HEADER_BG_COLOR = '#E1F5FE'; 
 
-// Imágenes Mock (Simulando respuesta de API)
-const MOCK_BANNER_IMG = 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=1200&auto=format&fit=crop';
-const MOCK_PHONE_IMG = 'https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgbmxo/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgbmxo-536069774?$650_519_PNG$';
 const ICON = require('@/assets/images/icon.png');
 const BACKGROUND_IMAGE = require('@/assets/images/fondoHome.jpg');
+const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg'; 
+// AGREGA ESTA LÍNEA:
+const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
 
 export default function Index() {
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
 
-  // Esta función se ejecuta AUTOMÁTICAMENTE al cargar el componente
-  useEffect(() => {
-    // 1. Si la navegación no está lista, no iniciamos el temporizador aún
-    if (!rootNavigationState?.key) return;
-    // 2. Iniciamos el temporizador de 3 segundos (3000 ms)
-    const timer = setTimeout(() => {
-      verificarSesion();
-    }, 3000);
-    // 3. Limpieza: Cancelar el timer si el componente se desmonta antes de los 3 seg
-    return () => clearTimeout(timer);
-  }, [rootNavigationState?.key]);
-
-  const verificarSesion = () => {
-    // 4. BLOQUEO DE SEGURIDAD:
-    // Si la navegación no está lista (no tiene key), no hacemos nada todavía.
-    if (!rootNavigationState?.key) return; 
-
-    console.log("--- Iniciando App: Verificando Sesión ---");
-    
-    const idUsuario = SesionUsuario.getId();
-
-    if (!idUsuario) {
-      console.log("No hay usuario. Redirigiendo a Login...");
-      router.replace('/login'); 
-    } else {
-      console.log(`Usuario autenticado: ${idUsuario}. Cargando contenido...`);
-    }
-  };
   // --- ESTADOS DE DATOS ---
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [ofertas, setOfertas] = useState<Product[]>([]);
   const [productos, setProductos] = useState<Product[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  
+  // Estado de carga inicial (para el delay de 3s y carga de datos)
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
 
@@ -91,94 +73,173 @@ export default function Index() {
   const isDesktop = width > 1024;
   const numColumns = isDesktop ? 4 : (width > 600 ? 2 : 1);
 
-  // --- 3. SIMULACIÓN DE CARGA DE DATOS (3 APIs) ---
+  // --- 3. LÓGICA DE SESIÓN Y CARGA DE DATOS ---
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Simulamos latencia de red
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!rootNavigationState?.key) return;
 
-        // 1. API Anuncios
-        const mockBanners: Banner[] = [{
-          id: 'b1',
-          imageUrl: MOCK_BANNER_IMG,
-          title: 'Que no te ganen las fiestas',
-          subtitle: 'Ofertas de Navidad'
-        }];
+    // Ejecutamos la carga de datos y la verificación en paralelo
+    const initApp = async () => {
+      
+      // 1. Esperar los 3 segundos requeridos visualmente
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
-        // 2. API Ofertas (Navidad)
-        const mockOfertas: Product[] = Array(4).fill(null).map((_, i) => ({
-          id: `offer_${i}`,
-          title: 'Samsung Galaxy A36 5G',
-          condition: 'Usado',
-          price: 4500,
-          image: MOCK_PHONE_IMG
-        }));
-
-        // 3. API Productos (Nuevos/Recomendados)
-        const mockProductos: Product[] = Array(8).fill(null).map((_, i) => ({
-          id: `prod_${i}`,
-          title: 'Samsung Galaxy A36 5G',
-          condition: i % 2 === 0 ? 'Nuevo' : 'Usado',
-          price: 4500,
-          image: MOCK_PHONE_IMG
-        }));
-
-        setBanners(mockBanners);
-        setOfertas(mockOfertas);
-        setProductos(mockProductos);
-      } catch (error) {
-        console.error("Error cargando APIs", error);
-      } finally {
-        setLoading(false);
+      // 2. Verificar Sesión
+      const idUsuario = SesionUsuario.getId();
+      
+      if (!idUsuario) {
+        console.log("No hay usuario. Redirigiendo a Login...");
+        router.replace('/login');
+        return; 
       }
+
+      console.log(`Usuario autenticado: ${idUsuario}. Cargando datos remotos...`);
+
+      // 3. Cargar datos del Servidor (APIs)
+      await fetchRemoteData(idUsuario);
+      
+      setLoading(false);
     };
 
-    loadData();
-  }, []);
+    initApp();
+  }, [rootNavigationState?.key]);
 
-  // --- 4. LÓGICA CRÍTICA: POST CON QUERY PARAMS ---
-  const executeApiAction = async (endpoint: string, params: Record<string, string>) => {
+
+  // Función centralizada para pedir datos a tus APIs PHP
+  const fetchRemoteData = async (userId: number) => {
     try {
-      // Convertimos objeto a Query String
-      const queryString = new URLSearchParams(params).toString();
-      const finalUrl = `${API_BASE}/${endpoint}?${queryString}`;
-
-      console.log(`[POST Request] Enviando a: ${finalUrl} (Body vacío)`);
-
-      // Simulación de Fetch
-      // await fetch(finalUrl, { method: 'POST' });
-
-      if (Platform.OS === 'web') {
-        alert(`Petición POST enviada a:\n${finalUrl}`);
-      } else {
-        Alert.alert("API Request", `POST: ${finalUrl}`);
+      // A. OBTENER PERFIL
+      // URL: https://ljusstudie.site/DigiCurvaServer/obtener_perfil.php?usuario_id=0
+      const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php?usuario_id=${userId}`);
+      if (resPerfil.ok) {
+        const dataPerfil = await resPerfil.json();
+        console.log(dataPerfil);
+        console.log(fetch(`${API_BASE_URL}/obtener_perfil.php?usuario_id=${userId}`));
+        
+        // Asumiendo que la API devuelve { "nombre": "...", "foto_perfil": "..." }
+        // Ajusta las claves según tu respuesta real PHP
+        setUserProfile({
+          nombre: dataPerfil.perfil.nombre || 'Usuario',
+          avatar: dataPerfil.perfil.foto_perfil_url || DEFAULT_AVATAR
+        });
       }
-    } catch (e) {
-      console.error(e);
+
+      // B. OBTENER PRODUCTOS
+      // URL: https://ljusstudie.site/DigiCurvaServer/Listar_productos.php
+      const resProd = await fetch(`${API_BASE_URL}/Listar_productos.php`);
+      if (resProd.ok) {
+        const dataProd = await resProd.json();
+        console.log(dataProd);
+        
+        // Mapeamos los datos crudos de la BD a la interfaz de la UI
+        const mappedProducts: Product[] = Array.isArray(dataProd.producto) ? dataProd.producto.map((item: any) => ({
+          id: item.anuncio_id || item.id, // Ajusta según tu columna BD
+          title: item.titulo || item.nombre,
+          //condition: item.producto.status === 'nuevo' ? 'Nuevo' : 'Usado', // Normalizar texto
+          price: parseFloat(item.costo) || 0,
+          image: item.url_imagen || item.imagen || MOCK_PHONE_IMG // Fallback si viene null
+        })) : [];
+        setProductos(mappedProducts);
+      }
+
+      // C. OBTENER ANUNCIOS (BANNERS)
+      // URL: https://ljusstudie.site/DigiCurvaServer/obtener_anuncios.php
+      const resAnuncios = await fetch(`${API_BASE_URL}/obtener_anuncios.php`);
+      if (resAnuncios.ok) {
+        const dataAnuncios = await resAnuncios.json();
+        console.log(dataAnuncios);
+        
+        const mappedBanners: Banner[] = Array.isArray(dataAnuncios.anuncios_activos) ? dataAnuncios.anuncios_activos.map((item: any) => ({
+          id: item.anuncio_id || item.id,
+          imageUrl: item.url_imagen || item.imagen,
+          title: item.titulo || '',
+          subtitle: item.mensaje || ''
+        })) : [];
+        setBanners(mappedBanners);
+      }
+
+    } catch (error) {
+      console.error("Error conectando con DigiCurva Server:", error);
+      // Opcional: Mostrar alerta si falla la red
     }
   };
 
+// ... tus otros estados ...
+
+  // --- LÓGICA DEL CARRUSEL ---
+  const flatListRef = useRef<FlatList>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // 1. Auto-Play: Cambia de slide cada 3 segundos
+  useEffect(() => {
+    // Si no hay banners o solo hay 1, no hacemos auto-play
+    if (banners.length <= 1) return;
+
+    const intervalId = setInterval(() => {
+      // Calculamos el siguiente índice
+      let nextIndex = activeIndex + 1;
+      
+      // Si llegamos al final, volvemos al 0
+      if (nextIndex >= banners.length) {
+        nextIndex = 0;
+      }
+
+      // Hacemos el scroll suave
+      flatListRef.current?.scrollToIndex({
+        index: nextIndex,
+        animated: true,
+      });
+
+      setActiveIndex(nextIndex);
+    }, 4000); // 4000ms = 4 segundos
+
+    return () => clearInterval(intervalId);
+  }, [activeIndex, banners.length]);
+
+  // 2. Detectar cambio manual (cuando el usuario desliza)
+  const onViewRef = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    if (viewableItems.length > 0 && viewableItems[0].index !== null) {
+      setActiveIndex(viewableItems[0].index);
+    }
+  });
+
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
+
+  // 3. Manejo de error si scroll falla (común en carruseles cíclicos)
+  const onScrollToIndexFailed = (info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+    const wait = new Promise(resolve => setTimeout(resolve, 500));
+    wait.then(() => {
+      flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+    });
+  };
+  // --- 4. ACCIONES DE LA UI ---
   const handleSearch = () => {
     if (!searchText.trim()) return;
-    executeApiAction('search', { q: searchText, source: 'header' });
+    Alert.alert("Búsqueda", `Buscando: ${searchText}`);
+    // Aquí podrías llamar a otra API de búsqueda si la tienes
   };
 
   const handleAddToCart = (product: Product) => {
-    executeApiAction('cart/add', { 
-      product_id: product.id, 
-      sku: 'SKU-GENERIC', 
-      qty: '1' 
-    });
+    Alert.alert("Carrito", `Agregado: ${product.title}`);
   };
+
+  // --- RENDER ---
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#2196F3" />
+        <Text style={{marginTop: 10, color: '#666'}}>Cargando DigiCurva...</Text>
       </View>
     );
   }
+
+  // Filtros simples en el cliente (puedes mejorarlo con APIs específicas)
+  // Asumimos que la API "Listar_productos" devuelve todo mezclado.
+  // Aquí separamos para llenar las secciones de la UI.
+  const ofertasList = productos.slice(0, 4); // Tomamos los primeros 4 como ofertas
+  const nuevosList = productos//productos.filter(p => p.condition === 'Nuevo').slice(0, 4);
+  const recomendadosList = productos.slice(4, 8); // Tomamos otros 4
 
   return (
     <SafeAreaView style={styles.container}>
@@ -187,31 +248,29 @@ export default function Index() {
       {/* --- HEADER --- */}
       <ImageBackground source={BACKGROUND_IMAGE}>
       <View style={styles.headerContainer}>
-        {/* Top Row: Logo & User Info */}
         <View style={[styles.headerTop, { maxWidth: 1200, alignSelf: 'center', width: '100%' }]}>
-          <Image 
-            source={ICON} // Placeholder logo
-            style={styles.logoImage} // Usar una imagen local o texto estilizado
-          />
+          <Image source={ICON} style={styles.logoImage} />
           <Text style={styles.logoText}>DigiCurva</Text>
           
-          <View style={{ flex: 1 }} /> {/* Spacer */}
+          <View style={{ flex: 1 }} /> 
 
           <View style={styles.userInfo}>
-            <Image source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }} style={styles.avatar} />
+            <Image 
+              source={{ uri: userProfile?.avatar || DEFAULT_AVATAR }} 
+              style={styles.avatar} 
+            />
             {isDesktop && (
               <View>
-                <Text style={styles.userName}>Naomi Ruiz</Text>
+                <Text style={styles.userName}>{userProfile?.nombre || 'Usuario'}</Text>
                 <Text style={styles.userLink}>Ajustes</Text>
               </View>
             )}
           </View>
         </View>
 
-        {/* Bottom Row: Nav & Search */}
+        {/* Nav & Search */}
         <View style={styles.navBar}>
           <View style={[styles.navContent, { maxWidth: 1200, alignSelf: 'center', width: '100%' }]}>
-            {/* Desktop Nav Links */}
             {isDesktop ? (
               <View style={styles.navLinks}>
                 <TouchableOpacity><Ionicons name="home-outline" size={20} color="#fff" /></TouchableOpacity>
@@ -227,7 +286,6 @@ export default function Index() {
               <TouchableOpacity><Ionicons name="menu" size={28} color="#fff" /></TouchableOpacity>
             )}
 
-            {/* Search Bar */}
             <View style={styles.searchContainer}>
               <TextInput 
                 style={styles.searchInput}
@@ -241,7 +299,6 @@ export default function Index() {
               </TouchableOpacity>
             </View>
 
-            {/* Icons */}
             <View style={styles.headerIcons}>
               <TouchableOpacity><Ionicons name="heart-outline" size={24} color="#fff" /></TouchableOpacity>
               <TouchableOpacity><Ionicons name="cart-outline" size={24} color="#fff" /></TouchableOpacity>
@@ -254,23 +311,66 @@ export default function Index() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={{ maxWidth: 1200, width: '100%', alignSelf: 'center' }}>
           
-          {/* 1. HERO BANNER (Carrusel Horizontal) */}
+          <TouchableOpacity 
+            style={styles.createAdButton}
+            onPress={()=>{router.replace('/Anuncio')}}
+          >
+            <Text style={styles.createAdText}>+ Crear anuncio</Text>
+          </TouchableOpacity>
+
+          {/* 1. HERO BANNER (Datos de obtener_anuncios.php) */}
+          {/* 1. HERO BANNER (CARRUSEL) */}
           <View style={styles.bannerContainer}>
-            {banners.map(banner => (
-              <View key={banner.id} style={styles.heroCard}>
-                <Image source={{ uri: banner.imageUrl }} style={styles.heroImage} resizeMode="cover" />
-                <View style={styles.heroOverlay}>
-                  <Text style={styles.heroTitle}>{banner.title}</Text>
-                  <Text style={styles.heroSubtitle}>{banner.subtitle}</Text>
-                </View>
+            {banners.length > 0 ? (
+              <>
+                <FlatList
+                  ref={flatListRef}
+                  data={banners}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id}
+                  onScrollToIndexFailed={onScrollToIndexFailed}
+                  onViewableItemsChanged={onViewRef.current}
+                  viewabilityConfig={viewConfigRef.current}
+                  renderItem={({ item }) => (
+                    <View style={[styles.heroCard, { width: width/1.3 - 40 }]}> 
+                      {/* width - 40 porque el container tiene paddingHorizontal 20 (20+20=40) */}
+                      <Image source={{ uri: item.imageUrl }} style={styles.heroImage} resizeMode="cover" />
+                      <View style={styles.heroOverlay}>
+                        <Text style={styles.heroTitle}>{item.title}</Text>
+                        <Text style={styles.heroSubtitle}>{item.subtitle}</Text>
+                      </View>
+                    </View>
+                  )}
+                />
+                
+                {/* Indicadores (Puntitos) */}
+                {/*<View style={styles.paginationContainer}>
+                  {banners.map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.dot,
+                        { backgroundColor: index === activeIndex ? '#fff' : 'rgba(255,255,255,0.5)' }
+                      ]}
+                    />
+                  ))}
+                </View>*/}
+              </>
+            ) : (
+              // Fallback cargando
+              <View style={[styles.heroCard, { backgroundColor: '#ccc', justifyContent: 'center', alignItems: 'center', width: '100%' }]}>
+                <ActivityIndicator color="#fff" />
+                <Text style={{ color: 'white', fontWeight: 'bold', marginTop: 5 }}>Cargando...</Text>
               </View>
-            ))}
+            )}
           </View>
 
-          {/* 2. SECCIÓN: OFERTAS DE NAVIDAD (Grid/Carrusel) */}
+          {/* 2. SECCIÓN: OFERTAS (Datos de Listar_productos.php) */}
           <SectionTitle title="Ofertas de Navidad" />
           <View style={styles.gridContainer}>
-            {ofertas.map((prod) => (
+            {ofertasList.map((prod) => (
               <ProductCard 
                 key={prod.id} 
                 product={prod} 
@@ -283,7 +383,7 @@ export default function Index() {
           {/* 3. SECCIÓN: RECOMENDADOS */}
           <SectionTitle title="Recomendados para ti" />
           <View style={styles.gridContainer}>
-            {productos.slice(0, 4).map((prod) => (
+            {recomendadosList.map((prod) => (
               <ProductCard 
                 key={prod.id} 
                 product={prod} 
@@ -296,7 +396,7 @@ export default function Index() {
           {/* 4. SECCIÓN: PRODUCTOS NUEVOS */}
           <SectionTitle title="Productos nuevos" />
           <View style={styles.gridContainer}>
-            {productos.map((prod) => (
+            {nuevosList.map((prod) => (
               <ProductCard 
                 key={prod.id} 
                 product={prod} 
@@ -311,8 +411,6 @@ export default function Index() {
         {/* --- FOOTER --- */}
         <View style={styles.footer}>
           <View style={[styles.footerContent, { flexDirection: isDesktop ? 'row' : 'column' }]}>
-            
-            {/* Brand */}
             <View style={styles.footerBrand}>
               <Text style={styles.footerLogo}>DigiCurva</Text>
               <Text style={styles.footerTagline}>De la comunidad, para la comunidad.</Text>
@@ -322,14 +420,11 @@ export default function Index() {
                  <Text style={{ fontSize: 18, color: '#666', fontWeight: 'bold' }}>X</Text>
               </View>
             </View>
-
-            {/* Links Columns */}
             <View style={styles.footerLinksContainer}>
               <FooterColumn title="Funciones" links={['Envío a domicilio', 'Vender', 'Pagos']} />
               <FooterColumn title="Información" links={['Acerca de nosotros', 'Preguntas frecuentes']} />
               <FooterColumn title="Soporte" links={['Contacto', 'Paquetería', 'Legal']} />
             </View>
-
           </View>
         </View>
 
@@ -347,16 +442,22 @@ const SectionTitle = ({ title }: { title: string }) => (
 const ProductCard = ({ product, width, onAdd }: { product: Product, width: number, onAdd: () => void }) => (
   <View style={[styles.card, { width: width }]}>
     <View style={styles.cardImageContainer}>
-      <Image source={{ uri: product.image }} style={styles.cardImage} resizeMode="contain" />
+      <Image 
+        source={{ uri: product.image }} 
+        style={styles.cardImage} 
+        resizeMode="cover" 
+        // Fallback imagen por si falla la URL
+        defaultSource={require('@/assets/images/icon.png')} 
+      />
       <TouchableOpacity style={styles.heartIcon}>
         <Ionicons name="heart-outline" size={20} color="#666" />
       </TouchableOpacity>
     </View>
     <View style={styles.cardContent}>
-      <Text style={styles.cardTitle}>{product.title}</Text>
-      <Text style={styles.cardCondition}>{product.condition}</Text>
+      <Text style={styles.cardTitle} numberOfLines={2}>{product.title}</Text>
+      {//<Text style={styles.cardCondition}>{product.condition}</Text>
+      }
       <Text style={styles.cardPrice}>${product.price.toLocaleString()}</Text>
-      {/* Botón invisible para cubrir toda la card o explícito */}
       <TouchableOpacity style={styles.addButton} onPress={onAdd}>
         <Text style={styles.addButtonText}>Ver detalles</Text>
       </TouchableOpacity>
@@ -373,7 +474,7 @@ const FooterColumn = ({ title, links }: { title: string, links: string[] }) => (
   </View>
 );
 
-// --- ESTILOS (StyleSheet) ---
+// --- ESTILOS ---
 
 const styles = StyleSheet.create({
   container: {
@@ -385,7 +486,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Header
   headerContainer: {
     backgroundColor: 'rgba(56, 189, 248, 0.4)',
     width: '100%',
@@ -405,7 +505,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#fff', // En la imagen parece blanco con borde o sombra, o gris muy claro
+    color: '#fff', 
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
@@ -422,6 +522,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderWidth: 2,
     borderColor: '#fff',
+    backgroundColor: '#ccc',
   },
   userName: {
     fontSize: 12,
@@ -432,7 +533,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#fff',
   },
-  // Nav Bar
   navBar: {
     width: '100%',
   },
@@ -475,26 +575,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 15,
   },
-  // Content
   scrollContent: {
     paddingBottom: 40,
   },
-  // Banner
+  createAdButton: {
+    margin: 20,
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 8,
+    alignSelf: 'flex-start'
+  },
+  createAdText: {
+    color: 'white',
+    fontWeight: 'bold'
+  },
   bannerContainer: {
     width: '100%',
     height: 300,
     marginBottom: 30,
-    marginTop: 20,
-    borderRadius: 12,
-    overflow: 'hidden',
+    marginTop: 0,
     position: 'relative',
-    paddingHorizontal: 20, // Margen lateral para que no toque bordes en desktop
+    paddingHorizontal: 20, 
+    justifyContent: 'center'
   },
   heroCard: {
-    width: '100%',
-    height: '100%',
+    //width: '100%',
+    height: 300,
     borderRadius: 12,
     overflow: 'hidden',
+    backgroundColor: '#eee',
+    marginRight: 0,
+  },
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 15,
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10, // Para que quede encima de la imagen
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
   },
   heroImage: {
     width: '100%',
@@ -524,7 +649,6 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 4,
   },
-  // Sections
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
@@ -540,13 +664,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     marginBottom: 30,
   },
-  // Cards
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
     margin: 10,
     padding: 15,
-    // Sombra (Elevation / Shadow)
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -557,7 +679,7 @@ const styles = StyleSheet.create({
   },
   cardImageContainer: {
     width: '100%',
-    aspectRatio: 1, // Cuadrado
+    aspectRatio: 1, 
     marginBottom: 10,
     position: 'relative',
   },
@@ -578,6 +700,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
     marginBottom: 2,
+    height: 40, 
   },
   cardCondition: {
     fontSize: 12,
@@ -585,8 +708,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   cardPrice: {
-    fontSize: 22, // Grande como en la imagen
-    fontWeight: '300', // Light
+    fontSize: 22, 
+    fontWeight: '300', 
     color: '#333',
   },
   addButton: {
@@ -597,14 +720,13 @@ const styles = StyleSheet.create({
     color: '#2196F3',
     fontSize: 12,
   },
-  // Footer
   footer: {
     marginTop: 40,
     borderTopWidth: 1,
     borderTopColor: '#eee',
     paddingVertical: 40,
     paddingHorizontal: 20,
-    backgroundColor: '#fff', // Opcional, puede ser gris muy claro
+    backgroundColor: '#fff', 
   },
   footerContent: {
     maxWidth: 1200,

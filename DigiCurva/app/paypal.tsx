@@ -1,0 +1,41 @@
+import { View } from 'react-native';
+import { WebView } from 'react-native-webview';
+import Constants from 'expo-constants';
+import { StyleSheet } from 'react-native'
+import { Link } from 'expo-router';
+export default function Paypal() {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script 
+  src="https://www.paypal.com/sdk/js?client-id=BAA76DyI9dmcXglwBzY2jLytcQ2gcBUoqvaKKzpJHHuEkMz3WSwFHASU9lFIJbnz4r2wdZhtV-6dtzknmM&components=hosted-buttons&disable-funding=venmo&currency=MXN">
+</script>
+</head>
+<body>
+    <div id="paypal-container-722ZNXQPKFGYE"></div>
+<script>
+  paypal.HostedButtons({
+    hostedButtonId: "722ZNXQPKFGYE",
+  }).render("#paypal-container-722ZNXQPKFGYE")
+</script>
+</body>
+</html>`;
+    return (
+        <View style={{width:'100%', height:'100%'}}>
+            <WebView 
+                style={styles.container}
+                originWhitelist={['*']}
+                source={{ html: html }} />
+            <Link href={'https://ljusstudie.site/paypal/'} style={{color:'#940399ff', fontWeight:'bold'}}>Si no carga aquí, da click aquí para continuar.</Link>
+        </View>
+    );
+}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: Constants.statusBarHeight,
+  },
+});

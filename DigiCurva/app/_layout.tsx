@@ -15,6 +15,7 @@ export default function RootLayout() {
       <Stack.Screen name="producto" options={{ title: 'Producto', headerShown: false }} />
       <Stack.Screen name="Anuncio" options={{ title: 'Anuncio', headerShown: false }} />
       <Stack.Screen name="carrito" options={{ title: 'Carrito', headerShown: false }} />
+      <Stack.Screen name="paypal" options={{ title: 'Paypal', headerShown: false }} />
     </Stack>
   );
 }
