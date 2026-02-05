@@ -262,11 +262,11 @@
                     <div class="card">
                         
                         <label class="label">Número de teléfono o correo electrónico</label>
-                        <input type="email" id="input_identifier" class="input" placeholder="">
+                        <input type="email" id="input_identifier" class="input" placeholder="correo@ejemplo.com">
 
                         <label class="label">Contraseña</label>
                         <div class="password-container">
-                            <input type="password" id="input_password" class="input-password">
+                            <input type="password" id="input_password" class="input-password" autocomplete="new-password" aria-autocomplete="list">
                             <div class="eye-icon" onclick="togglePassword()">
                                 <ion-icon name="eye-off-outline" id="eye-icon-el"></ion-icon>
                             </div>
@@ -328,16 +328,21 @@
                 //'https://ljusstudie.site/DigiCurvaServer/login.php';
 
                 // 1. Construcción de FormData
-                const _formData = new FormData();
-                _formData.append('correo', identifier);
-                _formData.append('contrasena', password);
+                const datosLogin = {
+                    correo: identifier,
+                    contrasena: password
+                };
 
-                console.log('Enviando POST a:', baseUrl);
+                console.log('Enviando POST a:', baseUrl,' con correo:', identifier);
 
                 // 3. Petición Fetch
                 const response = await fetch(baseUrl, {
                     method: 'POST',
-                    body: _formData
+                    // IMPORTANTE: Enviamos los datos como JSON o como FormData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosLogin)
                 });
 
                 // Intentamos parsear JSON, si falla la API atrapamos el error
@@ -345,20 +350,20 @@
                 console.log('Respuesta:', data);
                 
                 // Alert solicitado
-                alert(`Petición enviada exitosamente a: \n${finalUrl}`);
+                alert(`Petición enviada exitosamente a: \n${baseUrl}`);
 
                 if (data.success) {
-                    // Redirección (asumiendo que index.html está en la raíz)
-                    window.location.href = 'index.html'; 
+                    // Redirección (asumiendo que index.php está en la raíz)
+                    window.location.href = './index.php'; 
                 } else {
                     // Si la API responde pero no hay usuario_id (ej. credenciales mal)
                     if(data.error) alert("Error: " + data.error);
                 }
 
             } catch (error) {
-                console.error(error);
+                console.log('Error en la petición:', error.message);
                 // Simulación de éxito visual si la API falla (como en tu código original)
-                alert(`Simulación: Petición POST enviada con Query Params:\nUsuario: ${identifier}\nPass: ${password}`);
+                alert(error.message);
             } finally {
                 setLoading(false);
             }

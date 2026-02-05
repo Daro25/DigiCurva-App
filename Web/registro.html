@@ -323,7 +323,7 @@
 
                                 <div class="input-group">
                                     <label class="label">Contraseña</label>
-                                    <input type="password" id="contrasena" class="input">
+                                    <input type="password" id="contrasena" class="input" autocomplete="new-password">
                                 </div>
 
                                 <label class="label">Foto (opcional)</label>
@@ -470,20 +470,28 @@
             try {
                 // Construcción de la URL
                 const baseUrl = 'http://xampp.local/DigiCurvaServer/registro.php';//'https://ljusstudie.site/DigiCurvaServer/registro.php';
-                const queryParams = new URLSearchParams({
+                // Construcción del objeto de datos
+                const datosRegistro = {
                     nombre: formData.nombres + ' ' + formData.apellidos,
                     correo: formData.email,
                     contrasena_hash: formData.contrasena,
                     telefono: formData.telefono,
                     direccion: `${formData.calle}, ${formData.numeroCasa}, ${formData.localidad}`,
                     foto_perfil_url: finalImageUrl || ''
+                };
+
+                console.log("Registrando vía POST en:", baseUrl, " con datos:", formData.nombres);
+
+                const respuesta = await fetch(baseUrl, {
+                    method: 'POST',
+                    // IMPORTANTE: Enviamos los datos como JSON o como FormData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosRegistro)
                 });
 
-                const finalUrl = `${baseUrl}?${queryParams.toString()}`;
-                console.log("Registrando en:", finalUrl);
-
-                const response = await fetch(finalUrl);
-                const data = await response.json();
+                const data = await respuesta.json();
 
                 console.log("Respuesta servidor:", data);
 
@@ -492,7 +500,7 @@
                     alert("¡Registro completado!");
                     window.location.href = 'index.php'; // Redirigir al Home
                 } else {
-                    const errorMsg = data.error || data.mensaje || "Error desconocido.";
+                    const errorMsg = data.error || data.resultado || "Error desconocido.";
                     alert("Error de Registro: " + errorMsg);
                 }
 
