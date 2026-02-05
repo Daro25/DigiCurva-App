@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar Anuncio - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        /* --- RESET Y BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { width: 100%; min-height: 100vh; overflow-x: hidden; }
+
+        /* --- FONDO --- */
+        .background-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background-image: url('./assets/fondoHome.jpg'); /* Ruta ajustada */
+            background-size: cover; background-position: center;
+        }
+        .background-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: linear-gradient(to bottom, rgba(135, 206, 250, 0.6), rgba(135, 206, 235, 0.4));
+        }
+
+        /* --- LAYOUT --- */
+        .container {
+            max-width: 1200px; margin: 0 auto; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .logo-container { display: flex; align-items: center; }
+        .logo-icon {
+            width: 32px; height: 32px; background-color: #0056b3; border-radius: 8px; margin-right: 8px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .logo-img { width: 24px; height: 24px; } /* Ajuste para imagen dentro del icono */
+        .logo-text {
+            font-size: 24px; fontWeight: 900; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .nav-link { font-size: 16px; font-weight: 500; color: #333; text-decoration: none; cursor: pointer; }
+
+        .page-title {
+            font-size: 24px; font-weight: bold; color: #000; align-self: flex-start; margin-bottom: 20px; width: 100%;
+        }
+
+        /* --- SECCIÓN SUPERIOR (PREVIEW Y FORM) --- */
+        .top-section {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; width: 100%; margin-bottom: 40px;
+        }
+
+        /* Columna Izquierda (Preview) */
+        .left-column { flex: 1; min-width: 300px; position: relative; }
+        
+        .floating-tools {
+            position: absolute; left: -20px; top: 20px; z-index: 10; display: flex; flex-direction: column; gap: 15px;
+        }
+        .tool-btn {
+            width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .tool-btn:active { transform: scale(0.95); }
+        .btn-primary { background-color: #4a90e2; color: white; }
+        .btn-secondary { background-color: #888; color: white; }
+
+        .preview-card {
+            width: 100%; height: 250px; border-radius: 12px; padding: 20px;
+            background: linear-gradient(to bottom right, rgba(200, 200, 200, 1), rgba(130, 142, 177, 1));
+            border: 1px solid rgba(255,255,255,0.4);
+            margin-left: 30px; /* Espacio para herramientas */
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        .preview-img-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;
+        }
+
+        .preview-content { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
+        .preview-header { align-self: flex-end; text-align: right; }
+        .preview-title { font-size: 22px; font-family: serif; font-weight: bold; transition: color 0.3s; }
+        .preview-desc { font-size: 16px; font-family: serif; transition: color 0.3s; }
+
+        .placeholder-icon {
+            width: 80px; height: 60px; border: 2px solid #fff; border-radius: 10px;
+            display: flex; justify-content: center; align-items: center; opacity: 0.8;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+
+        /* Columna Derecha (Form) */
+        .form-card {
+            flex: 1; min-width: 300px; background-color: #fff; border-radius: 20px; padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); height: auto; min-height: 300px;
+        }
+        .input-group { margin-bottom: 20px; display: flex; flex-direction: row; align-items: flex-start; }
+        .input-label { font-weight: bold; width: 80px; margin-top: 15px; font-size: 14px; color: #333; }
+        .input-field {
+            flex: 1; background-color: #fff; border-radius: 12px; padding: 15px; font-size: 14px;
+            border: 1px solid #eee; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            font-family: inherit; resize: none;
+        }
+        .input-field:focus { border-color: #4a90e2; }
+
+        /* --- PLANES --- */
+        .plans-container {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%;
+        }
+        .plan-card {
+            background-color: #fff; border-radius: 16px; padding: 24px; width: 300px; min-height: 320px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .plan-title { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+        .plan-subtitle { font-size: 14px; color: #666; margin-bottom: 20px; }
+        .price-row { display: flex; align-items: baseline; margin-bottom: 20px; }
+        .currency { font-size: 24px; font-weight: bold; margin-right: 2px; }
+        .amount { font-size: 48px; font-weight: bold; color: #000; }
+        .freq { font-size: 16px; color: #666; margin-left: 5px; }
+        
+        .feature-row { display: flex; align-items: flex-start; margin-top: 10px; }
+        .feature-text { font-size: 14px; color: #333; line-height: 1.4; flex: 1; }
+
+        .plan-btn {
+            padding: 14px; border-radius: 10px; border: 1px solid; cursor: pointer; text-align: center;
+            font-size: 14px; font-weight: 600; transition: opacity 0.2s;
+        }
+        .btn-black { background-color: #000; border-color: #000; color: #fff; }
+        .btn-white { background-color: #fff; border-color: #ddd; color: #000; }
+        .plan-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Spinner */
+        .spinner {
+            border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 3px solid currentColor;
+            width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Input file oculto */
+        #fileInput { display: none; }
+
+        /* Canvas oculto para análisis */
+        #analysisCanvas { display: none; }
+
+        @media (max-width: 768px) {
+            .preview-card { margin-left: 0; margin-bottom: 40px; margin-top: 20px; }
+            .floating-tools { top: -60px; left: 0; flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-container"></div>
+    <div class="background-overlay"></div>
+
+    <div class="container">
+        
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <img src="./assets/icon.png" alt="Icon" class="logo-img">
+                </div>
+                <span class="logo-text">DigiCurva</span>
+            </div>
+            <a href="index.html" class="nav-link">Home</a>
+        </div>
+
+        <h1 class="page-title">Crea un anuncio</h1>
+
+        <div class="top-section">
+            
+            <div class="left-column">
+                <div class="floating-tools">
+                    <button class="tool-btn btn-primary" onclick="triggerFileSelect()">
+                        <ion-icon name="camera-outline" style="font-size: 24px;"></ion-icon>
+                    </button>
+                    <button class="tool-btn btn-secondary" onclick="triggerFileSelect()">
+                        <span class="material-icons" style="font-size: 24px;">add_to_photos</span>
+                    </button>
+                </div>
+
+                <div class="preview-card" id="previewCard">
+                    <img id="previewImage" class="preview-img-layer" style="display: none;">
+                    
+                    <div id="imagePlaceholder" class="placeholder-icon">
+                        <ion-icon name="camera-outline" style="font-size: 40px; color: #fff;"></ion-icon>
+                    </div>
+
+                    <div class="preview-content">
+                        <div class="preview-header">
+                            <div class="preview-title" id="previewTitleText">Titulo de anuncio</div>
+                        </div>
+                        <div class="preview-desc" id="previewDescText">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="input-group">
+                    <label class="input-label">Titulo:</label>
+                    <input type="text" id="adTitle" class="input-field" placeholder="Titulo" value="Titulo de anuncio" oninput="updatePreview()">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Descripción:</label>
+                    <textarea id="adDescription" class="input-field" placeholder="Descripción..." rows="4" oninput="updatePreview()">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</textarea>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">URL:</label>
+                    <input type="text" id="urlDisplay" class="input-field" placeholder="URL de imagen..." readonly>
+                </div>
+                <div class="input-group">
+                <a href="#Segumiento-pagar" style="text-decoration: none; border: #9b9a9a 2px solid; padding: 2px; border-radius: 5px;" class="input-label">Siguiente.</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="plansLoader" style="text-align: center; width: 100%;">
+            <div class="spinner" style="width: 40px; height: 40px; border-top-color: #000;"></div>
+        </div>
+        <div class="plans-container" id="plansContainer" style="display: none;">
+            </div>
+
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)">
+    <canvas id="analysisCanvas"></canvas>
+
+    <script>
+        // --- CONSTANTES ---
+        const URL_SUBIR_IMAGEN = 'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
+        const URL_CREAR_ANUNCIO = 'http://xampp.local/DigiCurvaServer/publicar_anuncio.php'//'https://ljusstudie.site/DigiCurvaServer/publicar_anuncio.php';
+        const URL_PROCESAR_PAGO = 'https://ljusstudie.site/paypal/crear_link_paypal.php';
+
+        // --- ESTADO GLOBAL ---
+        let photoFile = null; // El archivo físico
+        let photoUri = '';    // URL para mostrar (blob o remota)
+        let submitting = false;
+
+        // Simulamos SesionUsuario
+        const SesionUsuario = {
+            getId: () => localStorage.getItem('usuario_id') || '1' 
+        };
+
+        // --- INICIALIZACIÓN ---
+        const plansData = [
+            { id: 1, title: 'Plan 1', subtitle: 'Por una semana', price: 30, currency: 'MXN', frequency: '', featureText: 'Date a conocer por una semana', isRecommended: false },
+            { id: 2, title: 'Plan 2', subtitle: 'Por un Mes', price: 120, currency: ' - 15% dto. ', frequency: 'MXN', featureText: 'Graba el anuncio en la mente de todos por un mes.', isRecommended: true },
+            { id: 3, title: 'Plan 3', subtitle: 'Por cuatro meses', price: 480, currency: ' - 47.91% dto. ', frequency: 'MXN', featureText: 'Se más radical y haz que todos vean tu anuncio por 4 meses.', isRecommended: false },
+        ];
+
+        window.onload = () => {
+            renderPlans();
+            console.log('User ID:', SesionUsuario.getId());
+        };
+
+        // --- UI LOGIC ---
+        function updatePreview() {
+            document.getElementById('previewTitleText').textContent = document.getElementById('adTitle').value || 'Titulo';
+            document.getElementById('previewDescText').textContent = document.getElementById('adDescription').value || 'Descripción...';
+        }
+
+        function triggerFileSelect() {
+            if(submitting) return;
+            document.getElementById('fileInput').click();
+        }
+
+        // --- MANEJO DE IMAGEN Y CANVAS (Replicando ImageManipulator) ---
+        function handleFileSelected(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                photoFile = file;
+                photoUri = URL.createObjectURL(file);
+
+                // Mostrar imagen
+                const imgEl = document.getElementById('previewImage');
+                imgEl.src = photoUri;
+                imgEl.style.display = 'block';
+                document.getElementById('imagePlaceholder').style.display = 'none';
+                
+                // Actualizar input URL display (simulado)
+                document.getElementById('urlDisplay').value = "Imagen local seleccionada";
+
+                // Analizar color (Contraste)
+                analyzeImageColor(file);
+            }
+        }
+
+        function analyzeImageColor(file) {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const canvas = document.getElementById('analysisCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 1. Simular recorte 9:5 (solo para cálculo)
+                // Lógica simplificada: Tomamos la mitad derecha de la imagen para analizar
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                // 2. Analizar mitad derecha (como en React Native)
+                const startX = Math.floor(img.width / 1.5);
+                const widthToAnalyze = img.width - startX;
+                
+                const imageData = ctx.getImageData(startX, 0, widthToAnalyze, img.height);
+                const data = imageData.data;
+                
+                let r = 0, g = 0, b = 0;
+                let count = 0;
+
+                for (let i = 0; i < data.length; i += 4 * 100) { // Muestreo cada 100px para velocidad
+                    r += data[i];
+                    g += data[i + 1];
+                    b += data[i + 2];
+                    count++;
+                }
+
+                r = Math.floor(r / count);
+                g = Math.floor(g / count);
+                b = Math.floor(b / count);
+
+                const hex = rgbToHex(r, g, b);
+                const textColor = checkContrast(hex);
+
+                // Aplicar color
+                document.getElementById('previewTitleText').style.color = textColor;
+                document.getElementById('previewDescText').style.color = textColor;
+                
+                console.log("Color promedio derecha:", hex, "Texto:", textColor);
+            };
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+
+        function checkContrast(hex) {
+            const r = parseInt(hex.substr(1, 2), 16);
+            const g = parseInt(hex.substr(3, 2), 16);
+            const b = parseInt(hex.substr(5, 2), 16);
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return yiq < 150 ? '#fff' : '#000';
+        }
+
+        // --- RENDER PLANES ---
+        function renderPlans() {
+            const container = document.getElementById('plansContainer');
+            container.innerHTML = '';
+            
+            plansData.forEach(plan => {
+                const btnClass = plan.isRecommended ? 'btn-black' : 'btn-white';
+                
+                const html = `
+                    <div class="plan-card" id="Segumiento-pagar">
+                        <div class="plan-content">
+                            <div class="plan-title">${plan.title}</div>
+                            <div class="plan-subtitle">${plan.subtitle}</div>
+                            <div class="price-row">
+                                <span class="currency">$</span>
+                                <span class="amount">${plan.price}</span>
+                                <span class="freq">${plan.currency}${plan.frequency}</span>
+                            </div>
+                            <div class="feature-row">
+                                <ion-icon name="checkmark" style="font-size: 18px; color: #666; margin-right: 6px;"></ion-icon>
+                                <span class="feature-text">${plan.featureText}</span>
+                            </div>
+                        </div>
+                        <button class="plan-btn ${btnClass}" onclick="handleCreateAndPay(${plan.id})" id="btn-plan-${plan.id}">
+                            Crear y pagar
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+
+            document.getElementById('plansLoader').style.display = 'none';
+            container.style.display = 'flex';
+        }
+
+        // --- LÓGICA DE API (3 PASOS) ---
+
+        // Helper para fechas
+        function calcularFechasPlan(planId) {
+            const fechaInicio = new Date();
+            const fechaFin = new Date(fechaInicio);
+
+            switch (planId) {
+                case 1: fechaFin.setDate(fechaInicio.getDate() + 7); break;
+                case 2: fechaFin.setMonth(fechaInicio.getMonth() + 1); break;
+                case 3: fechaFin.setMonth(fechaInicio.getMonth() + 4); break;
+                default: fechaFin.setDate(fechaInicio.getDate() + 7); break;
+            }
+
+            const formatSQL = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            return { fecha_inicio: formatSQL(fechaInicio), fecha_fin: formatSQL(fechaFin) };
+        }
+
+        // PASO 1
+        async function step1_uploadImage() {
+            console.log("--- PASO 1: SUBIR FOTO ---");
+            if (!photoFile) return photoUri; // Si no hay archivo nuevo, retorna lo que haya
+
+            const formData = new FormData();
+            // Generar nombre
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+            const ext = photoFile.name.split('.').pop() || 'jpg';
+            const filename = `IMG_${timestamp}.${ext}`;
+            
+            formData.append('image', photoFile, filename);
+
+            const response = await fetch(URL_SUBIR_IMAGEN, { method: 'POST', body: formData });
+            const json = await response.json();
+
+            if (!response.ok || !json.url) throw new Error(json.error || 'Error subiendo imagen');
+            console.log("URL Recibida:", json.url);
+            return json.url;
+        }
+
+        // PASO 2
+        async function step2_createAdRecord(planId, imageUrl, title, desc, price) {
+            console.log("--- PASO 2: CREAR REGISTRO ---");
+            const fechas = calcularFechasPlan(planId);
+            const idUsuario = SesionUsuario.getId();
+
+            const params = new URLSearchParams({
+                titulo: title,
+                mensaje: desc,
+                usuario_id: idUsuario,
+                fecha_inicio: fechas.fecha_inicio,
+                fecha_fin: fechas.fecha_fin,
+                url_imagen: imageUrl || '',
+                costo: price
+            });
+
+            const finalUrl = `${URL_CREAR_ANUNCIO}?${params.toString()}`;
+            console.log("GET:", finalUrl);
+
+            // FormData vacio para body (como en el original, aunque GET ignora body)
+            const response = await fetch(finalUrl, { method: 'POST' }); // Original usa POST method pero params en URL
+            const json = await response.json();
+
+            if (!json.id_anuncio) throw new Error(json.error || 'Error creando anuncio');
+            console.log("ID Anuncio:", json.id_anuncio);
+            return parseInt(json.id_anuncio);
+        }
+
+        // PASO 3
+        async function step3_getPaymentLink(adId, plan) {
+            console.log("--- PASO 3: LINK PAGO ---");
+            const params = new URLSearchParams({
+                id_anuncio: adId,
+                precio: plan.price,
+                plan_id: plan.id
+            });
+            const finalUrl = `${URL_PROCESAR_PAGO}?${params.toString()}`;
+            console.log("Link Req:", finalUrl);
+
+            const formData = new FormData();
+            formData.append('id_anuncio', adId);
+            formData.append('precio', plan.price);
+
+            const response = await fetch(URL_PROCESAR_PAGO, { method: 'POST', body: formData });
+            const json = await response.json();
+
+            if (!json.paypal_link) throw new Error(json.error || 'Error generando link paypal');
+            return json.paypal_link;
+        }
+
+        // ORQUESTADOR
+        async function handleCreateAndPay(planId) {
+            const title = document.getElementById('adTitle').value;
+            const desc = document.getElementById('adDescription').value;
+
+            if (!title.trim() || !desc.trim()) {
+                alert('Por favor llena el título y la descripción.');
+                return;
+            }
+
+            const plan = plansData.find(p => p.id === planId);
+            setSubmitting(true);
+
+            try {
+                // 1. Subir
+                let finalImageUrl = null;
+                if (photoFile) {
+                    finalImageUrl = await step1_uploadImage();
+                }
+
+                // 2. Crear Registro
+                const newAdId = await step2_createAdRecord(planId, finalImageUrl || photoUri, title, desc, plan.price);
+
+                // 3. Link Pago
+                let paymentLink = null;
+                try {
+                    paymentLink = await step3_getPaymentLink(newAdId, plan);
+                } catch (e) { console.error(e); }
+
+                if (paymentLink) {
+                    if(confirm("Redirigiendo a PayPal para completar tu pago.")) {
+                        window.location.href = paymentLink;
+                        // O si prefieres la ruta interna como en el código:
+                        // window.location.href = 'paypal.html'; 
+                    }
+                } else {
+                    alert("Anuncio creado (ID: " + newAdId + "), pero no se obtuvo link de pago.");
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert('Error: ' + error.message);
+            } finally {
+                setSubmitting(false);
+            }
+        }
+
+        function setSubmitting(isSubmitting) {
+            submitting = isSubmitting;
+            const btns = document.querySelectorAll('.plan-btn');
+            btns.forEach(btn => {
+                btn.disabled = isSubmitting;
+                if(isSubmitting) btn.innerHTML = '<div class="spinner"></div>';
+                else btn.innerText = "Crear y pagar"; // Simplificado, idealmente restaurar texto original
+            });
+            
+            document.getElementById('adTitle').disabled = isSubmitting;
+            document.getElementById('adDescription').disabled = isSubmitting;
+        }
+
+    </script>
+</body>
+</html>

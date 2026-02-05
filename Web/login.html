@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        /* --- RESET Y ESTILOS GLOBALES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* --- CONTENEDOR DE FONDO --- */
+        .background-container {
+            width: 100%;
+            height: 100%;
+            background-image: url('assets/fondoHome.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        /* --- OVERLAY AZUL --- */
+        .overlay {
+            width: 100%;
+            height: 100%;
+            background-color: rgba(100, 200, 255, 0.65); /* Tinte azul DigiCurva */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto; /* Permitir scroll si la pantalla es muy pequeña */
+            padding: 20px;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-content {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: row; /* Desktop por defecto (> 900px) */
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+        }
+
+        /* --- SECCIÓN IZQUIERDA (BRANDING) --- */
+        .left-section {
+            flex: 1;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .brand-title {
+            font-size: 58px;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.1;
+            text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand-subtitle {
+            font-size: 24px;
+            color: #fff;
+            margin-top: 10px;
+            font-weight: 400;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- SECCIÓN DERECHA (FORMULARIO) --- */
+        .right-section {
+            width: 450px; /* Ancho fijo en desktop */
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25); /* elevation: 10 simulación */
+            width: 100%;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            margin-top: 15px;
+            display: block;
+        }
+
+        .input {
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-size: 16px;
+            color: #333;
+            outline: none;
+        }
+
+        .input:focus {
+            border-color: #3b82f6;
+        }
+
+        /* Contenedor password para el ojo */
+        .password-container {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding-right: 10px;
+        }
+        
+        .password-container:focus-within {
+            border-color: #3b82f6;
+        }
+
+        .input-password {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 12px 15px;
+            font-size: 16px;
+            color: #333;
+            background: transparent;
+        }
+
+        .eye-icon {
+            cursor: pointer;
+            padding: 5px;
+            color: #666;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: #3b82f6;
+            border: none;
+            border-radius: 6px;
+            padding: 14px 0;
+            margin-top: 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.2s;
+            box-shadow: 0 2px 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .btn-text {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* --- FOOTER DEL FORM --- */
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .link-text {
+            color: blue;
+            text-decoration: none;
+            margin-top: 20px; /* Nota: en web esto no afecta inline, pero mantenemos la lógica */
+            cursor: pointer;
+        }
+        
+        .link-text:hover {
+            text-decoration: underline;
+        }
+
+        /* --- SPINNER DE CARGA --- */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- RESPONSIVE (MEDIA QUERY) --- */
+        /* Equivalente a !isDesktop (width <= 900) */
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .left-section {
+                align-items: center;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .brand-title {
+                font-size: 42px; /* Reducir un poco en móvil */
+            }
+
+            .right-section {
+                width: 100%;
+                max-width: 450px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-container">
+        <div class="overlay">
+            
+            <div class="main-content">
+                
+                <div class="left-section">
+                    <h1 class="brand-title">Bienvenidos</h1>
+                    <h1 class="brand-title">a DigiCurva</h1>
+                    <p class="brand-subtitle">Una tienda que apoya a tu comunidad</p>
+                </div>
+
+                <div class="right-section">
+                    <div class="card">
+                        
+                        <label class="label">Número de teléfono o correo electrónico</label>
+                        <input type="email" id="input_identifier" class="input" placeholder="">
+
+                        <label class="label">Contraseña</label>
+                        <div class="password-container">
+                            <input type="password" id="input_password" class="input-password">
+                            <div class="eye-icon" onclick="togglePassword()">
+                                <ion-icon name="eye-off-outline" id="eye-icon-el"></ion-icon>
+                            </div>
+                        </div>
+
+                        <button id="btn-login" class="btn-primary" onclick="handleLogin()">
+                            <span id="btn-text" class="btn-text">Iniciar sesión</span>
+                            <div id="btn-spinner" class="spinner" style="display: none;"></div>
+                        </button>
+
+                        <div class="form-footer">
+                            <span class="footer-text">
+                                ¿No tiene una cuenta? 
+                                <a href="./registro.html" class="link-text">Registrarse en su lugar</a>
+                            </span>
+                            <ion-icon name="sunny-outline" style="font-size: 24px; color: #333;"></ion-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado
+        let secureTextEntry = true;
+        let loading = false;
+
+        // Toggle Password
+        function togglePassword() {
+            secureTextEntry = !secureTextEntry;
+            const input = document.getElementById('input_password');
+            const icon = document.getElementById('eye-icon-el');
+            
+            if (secureTextEntry) {
+                input.type = 'password';
+                icon.setAttribute('name', 'eye-off-outline');
+            } else {
+                input.type = 'text';
+                icon.setAttribute('name', 'eye-outline');
+            }
+        }
+
+        // Handle Login
+        async function handleLogin() {
+            const identifier = document.getElementById('input_identifier').value;
+            const password = document.getElementById('input_password').value;
+
+            if (!identifier || !password) {
+                alert("Por favor complete todos los campos");
+                return;
+            }
+
+            // UI Loading state
+            setLoading(true);
+
+            try {
+                const baseUrl = 'http://xampp.local/DigiCurvaServer/login.php';
+                //'https://ljusstudie.site/DigiCurvaServer/login.php';
+
+                // 1. Construcción de FormData
+                const _formData = new FormData();
+                _formData.append('correo', identifier);
+                _formData.append('contrasena', password);
+
+                console.log('Enviando POST a:', baseUrl);
+
+                // 3. Petición Fetch
+                const response = await fetch(baseUrl, {
+                    method: 'POST',
+                    body: _formData
+                });
+
+                // Intentamos parsear JSON, si falla la API atrapamos el error
+                const data = await response.json();
+                console.log('Respuesta:', data);
+                
+                // Alert solicitado
+                alert(`Petición enviada exitosamente a: \n${finalUrl}`);
+
+                if (data.success) {
+                    // Redirección (asumiendo que index.html está en la raíz)
+                    window.location.href = 'index.html'; 
+                } else {
+                    // Si la API responde pero no hay usuario_id (ej. credenciales mal)
+                    if(data.error) alert("Error: " + data.error);
+                }
+
+            } catch (error) {
+                console.error(error);
+                // Simulación de éxito visual si la API falla (como en tu código original)
+                alert(`Simulación: Petición POST enviada con Query Params:\nUsuario: ${identifier}\nPass: ${password}`);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function setLoading(isLoading) {
+            const btn = document.getElementById('btn-login');
+            const text = document.getElementById('btn-text');
+            const spinner = document.getElementById('btn-spinner');
+
+            if (isLoading) {
+                btn.disabled = true;
+                text.style.display = 'none';
+                spinner.style.display = 'block';
+            } else {
+                btn.disabled = false;
+                text.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        /* --- RESET Y BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #fff; width: 100%; min-height: 100vh; }
+
+        /* --- VARIABLES --- */
+        :root {
+            --primary-blue: #2563eb;
+            --dark-blue: #1d4ed8;
+            --bg-checkout: #e0f7fa;
+            --border-checkout: #cffafe;
+            --text-dark: #000;
+            --text-gray: #333;
+        }
+
+        /* --- LOADING --- */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue);
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- HEADER --- */
+        .header-bg {
+            background-image: url('assets/fondoHome.jpg'); /* Placeholder fondo */
+            background-size: cover; background-position: center; height: 80px; position: relative;
+        }
+        .header-overlay {
+            background-color: rgba(56, 189, 248, 0.6);
+            width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+        }
+        .header-content {
+            width: 95%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo-group { display: flex; align-items: center; gap: 10px; }
+        .logo-img { width: 30px; height: 30px; }
+        .logo-text { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.3); }
+
+        .search-bar {
+            flex: 1; max-width: 500px; background: #fff; border-radius: 4px; height: 35px;
+            display: flex; align-items: center; padding: 0 10px; margin: 0 20px;
+        }
+        .search-input { border: none; outline: none; flex: 1; height: 100%; font-size: 14px; }
+        
+        .user-section { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { color: #fff; font-weight: 700; font-size: 14px; }
+        .user-link { color: #e0f2fe; font-size: 12px; cursor: pointer; }
+        
+        .header-icons { display: flex; gap: 15px; margin-left: 20px; color: #fff; font-size: 24px; }
+
+        /* --- SUBNAV --- */
+        .sub-nav { background-color: #f0f9ff; border-bottom: 1px solid #e0f2fe; padding: 12px 0; display: flex; justify-content: center; }
+        .sub-nav-content { width: 95%; max-width: 1200px; display: flex; gap: 25px; align-items: center; font-size: 14px; font-weight: 600; color: #333; }
+        .nav-item { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-layout {
+            display: flex; width: 100%; min-height: calc(100vh - 130px);
+        }
+
+        /* Columna Izquierda (Items) */
+        .cart-column { width: 65%; background: #fff; padding: 30px; display: flex; flex-direction: column; align-items: center; }
+        .column-content { width: 100%; max-width: 800px; }
+        .section-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+
+        .cart-item { display: flex; align-items: center; margin-bottom: 20px; }
+        .item-img-container {
+            width: 100px; height: 100px; background: #fff; border-radius: 8px; padding: 5px; margin-right: 20px;
+            border: 1px solid #f3f4f6; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .item-img { width: 100%; height: 100%; object-fit: contain; }
+        .item-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .item-price { font-size: 22px; color: #333; }
+
+        /* Columna Derecha (Checkout) */
+        .checkout-column {
+            width: 35%; background-color: var(--bg-checkout); border-left: 1px solid var(--border-checkout);
+            padding: 30px; display: flex; flex-direction: column; align-items: center;
+        }
+
+        .total-label { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+        .total-amount { font-size: 36px; color: #333; margin-bottom: 30px; font-weight: 400; }
+
+        .payment-header { display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 20px; }
+        .payment-title { font-size: 20px; font-weight: bold; }
+
+        /* Opciones de Pago */
+        .payment-option {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            padding: 15px 0; cursor: pointer; user-select: none;
+        }
+        .payment-text h4 { font-size: 16px; font-weight: 500; color: #333; margin-bottom: 2px; }
+        .payment-text p { font-size: 14px; color: #666; }
+
+        /* Radio Button Custom */
+        .radio-outer {
+            width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary-blue);
+            background: #fff; display: flex; justify-content: center; align-items: center;
+        }
+        .radio-inner {
+            width: 14px; height: 14px; border-radius: 50%; background: var(--dark-blue); display: none;
+        }
+        .payment-option.selected .radio-outer { border-color: var(--dark-blue); }
+        .payment-option.selected .radio-inner { display: block; }
+
+        /* Botón Pagar */
+        .pay-btn {
+            margin-top: 40px; width: 100%; background-color: var(--dark-blue); color: #fff;
+            padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 5px rgba(29, 78, 216, 0.3); transition: opacity 0.2s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .pay-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .cart-column, .checkout-column { width: 100%; border-left: none; }
+            .search-bar, .user-name, .user-link { display: none; } /* Ocultar en móvil similar a RN */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="app-content" style="display: none;">
+        
+        <div class="header-bg">
+            <div class="header-overlay">
+                <div class="header-content">
+                    <div class="logo-group">
+                        <img src="assets/icon.png" class="logo-img" alt="Icon">
+                        <span class="logo-text">DigiCurva</span>
+                    </div>
+
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Buscar">
+                        <ion-icon name="search" style="color: #666; font-size: 20px;"></ion-icon>
+                    </div>
+
+                    <div class="user-section">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="avatar" alt="User">
+                        <div class="user-info">
+                            <span class="user-name">Naomi Ruiz</span>
+                            <span class="user-link">Ajustes</span>
+                        </div>
+                    </div>
+
+                    <div class="header-icons">
+                        <ion-icon name="heart-outline"></ion-icon>
+                        <ion-icon name="cart-outline"></ion-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sub-nav">
+            <div class="sub-nav-content">
+                <div class="nav-item"><ion-icon name="home-outline" style="font-size: 20px;"></ion-icon></div>
+                <div class="nav-item">Ofertas</div>
+                <div class="nav-item">Nuevo</div>
+                <div class="nav-item">Mas vendido</div>
+                <div class="nav-item">Categorías <ion-icon name="caret-down" style="font-size: 12px;"></ion-icon></div>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            
+            <div class="cart-column">
+                <div class="column-content">
+                    <div class="section-title">Carrito de compras</div>
+                    <div id="cart-items-container">
+                        </div>
+                </div>
+            </div>
+
+            <div class="checkout-column">
+                <div class="column-content">
+                    <div class="total-label">Total</div>
+                    <div class="total-amount" id="total-amount">$0.00</div>
+
+                    <div class="payment-header">
+                        <div class="payment-title">Metodo de pago</div>
+                        <ion-icon name="add" style="font-size: 24px; color: #555;"></ion-icon>
+                    </div>
+
+                    <div class="payment-option selected" id="opt-card" onclick="selectPayment('card')">
+                        <div class="payment-text">
+                            <h4>SANTANDER</h4>
+                            <p>XXXX-XXXX-XXXX-XXX</p>
+                        </div>
+                        <div class="radio-outer"><div class="radio-inner"></div></div>
+                    </div>
+
+                    <div class="payment-option" id="opt-cash" onclick="selectPayment('cash')">
+                        <div class="payment-text">
+                            <h4>Pago en efectivo</h4>
+                        </div>
+                        <div class="radio-outer"><div class="radio-inner"></div></div>
+                    </div>
+
+                    <button class="pay-btn" id="pay-btn" onclick="processPayment()">
+                        <span id="btn-text">Finalizar Compra</span>
+                        <div id="btn-spinner" class="spinner" style="width: 20px; height: 20px; border-width: 2px; border-top-color: #fff; display: none;"></div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // DATOS MOCK
+        const MOCK_CART_ITEMS = [
+            {
+                id: 'prod_galaxy_a36_5g',
+                name: 'Samsung Galaxy A36 5G',
+                price: 4500.00,
+                quantity: 1,
+                sku: 'SAM-A36-5G-WHT',
+                image: 'https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a356elgbltm/gallery/mx-galaxy-a35-5g-sm-a356-sm-a356elgbltm-540859530?$650_519_PNG$'
+            }
+        ];
+
+        // ESTADO
+        let cartItems = [];
+        let paymentMethod = 'card';
+        let isProcessing = false;
+        let total = 0;
+
+        // INICIALIZACIÓN (Simulando useEffect)
+        window.onload = function() {
+            setTimeout(() => {
+                cartItems = MOCK_CART_ITEMS;
+                renderCart();
+                calculateTotal();
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+            }, 600);
+        };
+
+        // RENDERIZADO
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = cartItems.map(item => `
+                <div class="cart-item">
+                    <div class="item-img-container">
+                        <img src="${item.image}" class="item-img" alt="${item.name}">
+                    </div>
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">$${formatCurrency(item.price)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function calculateTotal() {
+            total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('total-amount').textContent = '$' + formatCurrency(total);
+        }
+
+        function formatCurrency(amount) {
+            return amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // INTERACCIÓN
+        function selectPayment(method) {
+            paymentMethod = method;
+            
+            // Actualizar UI
+            document.getElementById('opt-card').classList.remove('selected');
+            document.getElementById('opt-cash').classList.remove('selected');
+            
+            document.getElementById(`opt-${method}`).classList.add('selected');
+        }
+
+        async function processPayment() {
+            if (isProcessing) return;
+            isProcessing = true;
+            toggleButtonLoading(true);
+
+            try {
+                const baseUrl = 'https://tu-api.com/checkout';
+                const itemIds = cartItems.map(i => i.id).join(',');
+
+                // Construcción de Query Params (Requisito clave)
+                const params = new URLSearchParams({
+                    amount: total.toString(),
+                    currency: 'MXN',
+                    payment_method: paymentMethod,
+                    items: itemIds,
+                    user_id: 'usr_naomi_123'
+                });
+
+                const finalUrl = `${baseUrl}?${params.toString()}`;
+                console.log(`[POST Request] Enviando a: ${finalUrl}`);
+
+                // Simulación de espera de red
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                const alertMsg = `Orden Procesada.\n\nMétodo: ${paymentMethod.toUpperCase()}\nTotal: $${formatCurrency(total)}\nURL: ${finalUrl}`;
+                alert(alertMsg);
+
+            } catch (error) {
+                console.error(error);
+                alert("Error al procesar el pago");
+            } finally {
+                isProcessing = false;
+                toggleButtonLoading(false);
+            }
+        }
+
+        function toggleButtonLoading(isLoading) {
+            const btn = document.getElementById('pay-btn');
+            const text = document.getElementById('btn-text');
+            const spinner = document.getElementById('btn-spinner');
+
+            if (isLoading) {
+                btn.disabled = true;
+                text.style.display = 'none';
+                spinner.style.display = 'block';
+            } else {
+                btn.disabled = false;
+                text.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
