@@ -1,5 +1,6 @@
 <?php
 if(!isset($_COOKIE['token'])){
+    //echo "<script>alert('".$_COOKIE['token']."'); window.location.href = '/login';</script>";
     header("Location: login.html");
     exit();
 }
@@ -435,7 +436,7 @@ if(!isset($_COOKIE['token'])){
 
     <script>
         // CONFIGURACIÓN
-        const API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
+        const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
 
@@ -486,7 +487,14 @@ if(!isset($_COOKIE['token'])){
             try {
                 // A. PERFIL
                 try {
-                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php?usuario_id=${userId}`);
+                    const data = {
+                        usuario_id: userId
+                    }
+                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
                     if(resPerfil.ok) {
                         const data = await resPerfil.json();
                         state.userProfile = {
@@ -511,7 +519,7 @@ if(!isset($_COOKIE['token'])){
                         })) : [];
                         renderProductSections();
                     }
-                } catch (e) { console.warn("Fallo productos", e); }
+                } catch (e) { console.warn("Fallo productos", e.message); }
 
                 // C. BANNERS
                 try {
