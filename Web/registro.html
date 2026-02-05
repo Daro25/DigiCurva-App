@@ -488,14 +488,9 @@
                 console.log("Respuesta servidor:", data);
 
                 // E. Manejo de respuesta
-                if (data && (data.id_usuario || data.success)) {
+                if (data && (data.success)) {
                     alert("¡Registro completado!");
-                    
-                    // Guardar sesión (Simulado)
-                    if (data.id_usuario) {
-                        localStorage.setItem('usuario_id', data.id_usuario);
-                        window.location.href = 'index.html'; // Redirigir al Home
-                    }
+                    window.location.href = 'index.php'; // Redirigir al Home
                 } else {
                     const errorMsg = data.error || data.mensaje || "Error desconocido.";
                     alert("Error de Registro: " + errorMsg);
