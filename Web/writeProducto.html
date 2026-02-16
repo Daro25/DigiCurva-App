@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir Producto - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIABLES Y RESET --- */
+        :root {
+            --primary-blue: #3b82f6; /* Azul brillante del botón check */
+            --header-bg-color: rgba(56, 189, 248, 0.4);
+            --bg-body: #fff;
+            --grey-placeholder: #e0e0e0;
+            --border-color: #ccc;
+            --max-width: 1200px;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-body); color: #333; padding-bottom: 80px; }
+
+        /* --- HEADER (Versión Dashboard Vendedor) --- */
+        .header-background {
+            background-image: url('assets/fondoHome.jpg');
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-container { background-color: var(--header-bg-color); width: 100%; padding: 10px 0; }
+        .header-content {
+            max-width: var(--max-width); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-weight: 900; font-size: 24px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        
+        /* Menú específico de esta vista */
+        .nav-menu { display: flex; gap: 25px; font-size: 15px; font-weight: 500; color: #000; } /* Texto negro en este header según imagen */
+        .nav-menu span { cursor: pointer; transition: color 0.2s; }
+        .nav-menu span:hover { color: #fff; }
+
+        .user-menu { display: flex; align-items: center; gap: 15px; color: #fff; font-size: 14px; }
+        .user-mini-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Top Bar: Título y Acciones */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px;
+        }
+        .page-title { font-size: 32px; font-weight: 500; color: #000; }
+
+        .actions-group { display: flex; align-items: center; gap: 15px; }
+
+        .btn-offer {
+            background-color: #e0e0e0; border: 1px solid #ccc;
+            padding: 10px 20px; border-radius: 6px;
+            font-weight: 500; cursor: pointer; font-size: 14px;
+        }
+        .btn-offer:hover { background-color: #d5d5d5; }
+
+        /* Botones Circulares Grandes */
+        .big-icon-btn {
+            width: 50px; height: 50px;
+            border-radius: 50%; border: none;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        .big-icon-btn:active { transform: scale(0.95); }
+        
+        .btn-delete { background-color: #e0e0e0; color: #333; }
+        .btn-save { background-color: #3b82f6; color: white; }
+
+        /* --- GRID PRINCIPAL --- */
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Mitad y mitad */
+            gap: 40px;
+        }
+
+        /* --- COLUMNA IZQUIERDA (Imágenes) --- */
+        .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+        .main-image-placeholder {
+            width: 100%; height: 300px;
+            background-color: #e0e0e0;
+            border-radius: var(--radius);
+            display: flex; justify-content: center; align-items: center;
+            color: #999; font-size: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        .main-image-placeholder img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        .thumbnails-row { display: flex; gap: 10px; }
+        
+        .thumb-box {
+            width: 60px; height: 60px;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .thumb-box.active { border-color: var(--primary-blue); }
+
+        /* Botones carga pequeños */
+        .upload-btns-row { display: flex; gap: 10px; align-items: center; }
+        .btn-circle-sm {
+            width: 45px; height: 45px;
+            border-radius: 50%; border: none;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 22px; cursor: pointer; color: white;
+        }
+        .btn-cam { background-color: var(--primary-blue); }
+        .btn-file { background-color: #888; }
+        
+        .limit-text { font-size: 14px; color: #888; margin-left: 10px; }
+
+        /* Selects Categoría */
+        .select-group { margin-top: 10px; }
+        .label-title { font-size: 18px; font-weight: 500; margin-bottom: 10px; display: block; }
+        
+        .custom-select {
+            width: 100%; padding: 12px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; background: #fff;
+            margin-bottom: 20px;
+        }
+
+        /* --- COLUMNA DERECHA (Datos) --- */
+        .right-col { display: flex; flex-direction: column; gap: 30px; }
+
+        .info-card {
+            border: 1px solid #ccc;
+            border-radius: var(--radius);
+            padding: 20px;
+            background: #fff;
+        }
+
+        .input-block { margin-bottom: 20px; }
+        .input-block:last-child { margin-bottom: 0; }
+        
+        .input-label { display: block; font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+        .inline { display: inline-block; margin-right: auto;  }
+        .text-input {
+            width: 100%; padding: 10px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; outline: none;
+        }
+        .number-input {
+            width: 100px;
+            margin-right: 20px;
+            display: inline-block;
+        }
+        .text-input:focus { border-color: var(--primary-blue); }
+
+        .textarea-input {
+            width: 100%; padding: 10px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; outline: none; resize: none;
+            height: 180px;
+        }
+
+        .additional-info-box {
+            border: 1px solid #ccc;
+            border-radius: var(--radius);
+            padding: 10px;
+            height: 150px;
+        }
+        .additional-textarea {
+            width: 100%; height: 100%;
+            border: none; outline: none; resize: none;
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .editor-grid { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .actions-group { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-background">
+        <div class="header-container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="./assets/icon.png" style="height: 30px;">
+                    <span class="logo-text">DigiCurva</span>
+                </div>
+                <div class="nav-menu">
+                    <ion-icon name="home-outline" style="font-size: 20px; cursor: pointer;"></ion-icon>
+                    <span>Inventario</span>
+                    <span>Ordenes</span>
+                    <span>Anuncios</span>
+                    <span>Reportes</span>
+                    <span>Rendimiento</span>
+                </div>
+                <div class="user-menu">
+                    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
+                            <span style="font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Naomi Ruiz</span>
+                            <span style="font-size: 11px; color: #eee;">Ajustes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        
+        <form id="formulario" enctype="multipart/form-data">
+        <div class="top-bar">
+            <h1 class="page-title">Añadir producto</h1>
+            <div class="actions-group">
+                <button type="button" class="btn-offer" onclick="goToAddOffer()">Añadir Oferta</button>
+                <button type="button" class="big-icon-btn btn-delete" onclick="confirmDelete()"><ion-icon name="trash-outline"></ion-icon></button>
+                <button type="submit" class="big-icon-btn btn-save"><ion-icon name="checkmark-outline"></ion-icon></button>
+            </div>
+        </div>
+
+        <div class="editor-grid">
+            <div class="left-col">
+                <div class="main-image-placeholder" id="mainPreview">
+                    <img id="imgDisplay" src="">
+                    <span id="placeholderText">Vista previa</span>
+                </div>
+
+                <!--div class="thumbnails-row">
+                    <div class="thumb-box" onclick="selectThumb(0)"></div>
+                    <div class="thumb-box" onclick="selectThumb(1)"></div>
+                    <div class="thumb-box" onclick="selectThumb(2)"></div>
+                    <div class="thumb-box" onclick="selectThumb(3)"></div>
+                </div-->
+                <div class="upload-btns-row">
+                    <button type="button" class="btn-circle-sm btn-file" onclick="triggerUpload()"><ion-icon name="document-text-outline"></ion-icon></button>
+                    <button type="button" class="btn-circle-sm btn-cam" onclick="triggerUpload()"><ion-icon name="camera-outline"></ion-icon></button>
+                    <!--span class="limit-text">* 4 fotos max.</span-->
+                    <input type="file" name="image" id="fileInput" hidden accept="image/*" onchange="handleFile(this)" required>
+                    <input type="text" name="name" id="nombreIMG" hidden>
+                </div>
+                <div class="select-group">
+                    <label class="label-title" for="categoria">Categoría del producto</label>
+                    <select class="custom-select" id="categoria" name="categoria">
+                        <option>Selecciona una opción.</option>
+                        <option>Electrónica</option>
+                        <option>Hogar</option>
+                        <option>Ropa</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="right-col">
+                
+                <div class="info-card">
+                    <div class="input-block">
+                        <label class="input-label" for="nombre">Título</label>
+                        <input type="text" name="nombre" class="text-input" placeholder="" required>
+                    </div>
+                    <input type="url" name="imagen_url" hidden id="url_ok_imagen">
+                    <div class="input-block">
+                        <label class="input-label" for="descripcion">Descripción</label>
+                        <textarea class="textarea-input" name="descripcion" required></textarea>
+                    </div>
+
+                    <div class="input-block inline">
+                        <label class="input-label inline" for="precio">Precio</label>
+                        <input type="number" name="precio" class="text-input number-input" placeholder="" required>
+                    </div>
+
+                    <div class="input-block inline">
+                        <label class="input-label inline" for="cantidad_existencia">En existencia</label>
+                        <input type="number" step="1" name="cantidad_existencia" 
+                        required
+                        class="text-input number-input" placeholder="" id="existencia">
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
+        document.getElementById('existencia').onchange = function() {
+            document.getElementById('existencia').value = 
+            parseInt(document.getElementById('existencia').value);
+        }
+        document.getElementById('categoria').onchange = function() {
+            console.log(document.getElementById('categoria').value);
+        }
+        const formulario = document.getElementById('formulario');
+        formulario.addEventListener('submit', async(e)=>{
+            e.preventDefault();
+            const datos = new FormData(formulario);
+            if (document.getElementById('categoria').value == 'Selecciona una opción.') {
+                if(window.confirm('Debes seleccionar una categoria antes de enviar.')){
+                    window.location.href = '#categoria';
+                    return;
+                }else{
+                    alert('ES OBLIGATORIO QUE LO HAGAS!');
+                    window.location.href = '#categoria';
+                    return;
+                }
+            }
+            try {
+                var urlimagen = null;
+                urlimagen = await uploadImage();
+                if (urlimagen == null){
+                    console.log('error de imagen');
+                    return;
+                }
+                urlimagen = urlimagen;
+                console.log(urlimagen);
+                document.getElementById('url_ok_imagen').value = urlimagen;
+                var response = await fetch(`${API_BASE_URL}/crear_producto.php`,{
+                    method: 'POST',
+                    body: datos
+                });
+                if(response.ok) {
+                    const data = await response.json();
+                    console.log(data);
+                    
+                    if (data.success) {
+                        if(window.confirm(data.resultado+'\n'+'¿Deseas registrar un nuevo producto?')){
+                            location.reload();
+                        }else{
+                            window.history.back();
+                        }
+                    } else {
+                        alert('Error de conexion');
+                        console.log("error de conexion");
+                    }
+                }
+            } catch (error) {
+                alert(error);
+                console.log(error);
+                
+            }
+        });
+        async function uploadImage() {
+            console.log("--- PASO 1: SUBIR FOTO ---");
+
+            // Generar nombre
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+            const filename = `IMG_${timestamp}`;
+            
+            document.getElementById('nombreIMG').value = filename;
+            var formData = new FormData(formulario);
+            const response = await fetch(`${URL_SUBIR_IMAGEN}/subirImageAlternativo.php`, { method: 'POST', body: formData });
+            const json = await response.json();
+
+            if (!response.ok || !json.url) {
+                return null;
+            }
+            console.log("URL Recibida:", json.url);
+            return URL_SUBIR_IMAGEN + '/' + json.url;
+        }
+        // Lógica de UI
+        function goToAddOffer() {
+            // Ir a la pantalla que hicimos antes (donde estaba la confusión)
+            //window.location.href = 'crear_oferta.html'; 
+            alert("Navegando a añadir oferta...");
+        }
+
+        function confirmDelete() {
+            if(confirm("¿Estás seguro de que quieres eliminar este borrador?")) {
+                alert("Borrador eliminado");
+                window.location.href = 'perfil.html';
+            }
+        }
+
+        // Simulación de carga de imágenes
+        function triggerUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('imgDisplay');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('placeholderText').style.display = 'none';
+                    
+                    // Llenar el primer thumb también
+                    document.querySelector('.thumb-box').style.backgroundImage = `url(${e.target.result})`;
+                    document.querySelector('.thumb-box').style.backgroundSize = 'cover';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function selectThumb(index) {
+            // Lógica para cambiar imagen principal al hacer clic en thumb
+            const thumbs = document.querySelectorAll('.thumb-box');
+            thumbs.forEach(t => t.classList.remove('active'));
+            thumbs[index].classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

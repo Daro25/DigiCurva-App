@@ -345,7 +345,10 @@
                                         </button>
                                     </div>
 
-                                    <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
+                                    <form id="formIMG" enctype="multipart/form-data" hidden>
+                                    <input type="text" id="nombreIMG" name="name" hidden>
+                                    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)" name="image" hidden>
+                                    </form>
                                 </div>
 
                             </div>
@@ -390,37 +393,25 @@
         }
 
         // 2. Función subir imagen a PHP (Replicando uploadToPHP)
-        async function uploadToPHP(file) {
-            setUploading(true);
-            const apiUrl = 'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
+        async function uploadToPHP() {
+            const formulario = document.getElementById('formIMG');
+            console.log("--- PASO 1: SUBIR FOTO ---");
 
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('name', 'foto_perfil_' + Date.now() + '.jpg');
+            // Generar nombre
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+            const filename = `IMG_${timestamp}`;
+            
+            document.getElementById('nombreIMG').value = filename;
+            var formData = new FormData(formulario);
+            const response = await fetch(`${URL_SUBIR_IMAGEN}/subirImageAlternativo.php`, { method: 'POST', body: formData });
+            const json = await response.json();
 
-            try {
-                console.log("Subiendo imagen a...", apiUrl);
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const responseData = await response.json();
-
-                if (response.ok) {
-                    console.log("Imagen subida:", responseData);
-                    return responseData.url; // Retornamos la URL
-                } else {
-                    alert("Error servidor imagen: " + (responseData.error || 'Desconocido'));
-                    return null;
-                }
-            } catch (error) {
-                console.error("Error red imagen:", error);
-                alert("Error al subir la imagen");
+            if (!response.ok || !json.url) {
                 return null;
-            } finally {
-                setUploading(false);
             }
+            console.log("URL Recibida:", json.url);
+            return URL_SUBIR_IMAGEN + '/' + json.url;
         }
 
         // Helper UI Spinner
@@ -462,7 +453,7 @@
             // C. Subir foto si existe (Primero subimos foto, luego registramos)
             let finalImageUrl = "";
             if (photoFile) {
-                finalImageUrl = await uploadToPHP(photoFile);
+                finalImageUrl = await uploadToPHP();
                 if (!finalImageUrl) return; // Si falla la subida, detenemos el registro
             }
 

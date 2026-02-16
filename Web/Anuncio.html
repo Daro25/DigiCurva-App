@@ -167,7 +167,7 @@
                 </div>
                 <span class="logo-text">DigiCurva</span>
             </div>
-            <a href="index.html" class="nav-link">Home</a>
+            <a href="index.php" class="nav-link">Home</a>
         </div>
 
         <h1 class="page-title">Crea un anuncio</h1>
@@ -226,13 +226,15 @@
             </div>
 
     </div>
-
-    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)">
+    <form id="formIMG" enctype="multipart/form-data" hidden>
+    <input type="text" id="nombreIMG" name="name">
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)" name="image">
+    </form>
     <canvas id="analysisCanvas"></canvas>
 
     <script>
         // --- CONSTANTES ---
-        const URL_SUBIR_IMAGEN = 'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
+        const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';//'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
         const URL_CREAR_ANUNCIO = 'http://xampp.local/DigiCurvaServer/publicar_anuncio.php'//'https://ljusstudie.site/DigiCurvaServer/publicar_anuncio.php';
         const URL_PROCESAR_PAGO = 'https://ljusstudie.site/paypal/crear_link_paypal.php';
 
@@ -289,7 +291,6 @@
                 analyzeImageColor(file);
             }
         }
-
         function analyzeImageColor(file) {
             const img = new Image();
             img.src = URL.createObjectURL(file);
@@ -408,52 +409,61 @@
 
         // PASO 1
         async function step1_uploadImage() {
+            const formulario = document.getElementById('formIMG');
             console.log("--- PASO 1: SUBIR FOTO ---");
-            if (!photoFile) return photoUri; // Si no hay archivo nuevo, retorna lo que haya
 
-            const formData = new FormData();
             // Generar nombre
             const now = new Date();
             const timestamp = now.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-            const ext = photoFile.name.split('.').pop() || 'jpg';
-            const filename = `IMG_${timestamp}.${ext}`;
+            const filename = `IMG_${timestamp}`;
             
-            formData.append('image', photoFile, filename);
-
-            const response = await fetch(URL_SUBIR_IMAGEN, { method: 'POST', body: formData });
+            document.getElementById('nombreIMG').value = filename;
+            var formData = new FormData(formulario);
+            const response = await fetch(`${URL_SUBIR_IMAGEN}/subirImageAlternativo.php`, { method: 'POST', body: formData });
             const json = await response.json();
 
             if (!response.ok || !json.url) throw new Error(json.error || 'Error subiendo imagen');
             console.log("URL Recibida:", json.url);
-            return json.url;
+            return URL_SUBIR_IMAGEN + '/' + json.url;
         }
 
         // PASO 2
         async function step2_createAdRecord(planId, imageUrl, title, desc, price) {
             console.log("--- PASO 2: CREAR REGISTRO ---");
             const fechas = calcularFechasPlan(planId);
-            const idUsuario = SesionUsuario.getId();
+            let formData = new FormData();
+            formData.append('titulo', title);
+            formData.append('mensaje', desc);
+            formData.append('fecha_inicio', fechas.fecha_inicio);
+            formData.append('fecha_fin', fechas.fecha_fin);
+            formData.append('url_imagen', imageUrl || '');
+            formData.append('costo', price);
 
-            const params = new URLSearchParams({
-                titulo: title,
-                mensaje: desc,
-                usuario_id: idUsuario,
-                fecha_inicio: fechas.fecha_inicio,
-                fecha_fin: fechas.fecha_fin,
-                url_imagen: imageUrl || '',
-                costo: price
-            });
-
-            const finalUrl = `${URL_CREAR_ANUNCIO}?${params.toString()}`;
-            console.log("GET:", finalUrl);
+            console.log(URL_CREAR_ANUNCIO);
 
             // FormData vacio para body (como en el original, aunque GET ignora body)
-            const response = await fetch(finalUrl, { method: 'POST' }); // Original usa POST method pero params en URL
-            const json = await response.json();
-
-            if (!json.id_anuncio) throw new Error(json.error || 'Error creando anuncio');
-            console.log("ID Anuncio:", json.id_anuncio);
-            return parseInt(json.id_anuncio);
+            const response = await fetch(URL_CREAR_ANUNCIO, { method: 'POST', body: formData });
+            console.log(response.status, response.statusText);
+            if (response.ok) {
+                const json = await response.json();
+                if(json.success) {
+                    if (json.status && json.status === 'pagado') {
+                        console.log("Anuncio creado y pagado exitosamente.");
+                        return 'pagado'; // O podrías retornar el ID también
+                    } else {
+                        console.log("Anuncio creado pero pendiente de pago.");
+                        return parseInt(json.id_anuncio);
+                    }
+                } else {
+                    console.log(json.error);
+                    return json.error || 'Error creando anuncio';
+                }
+                console.log("ID Anuncio:", json.id_anuncio);
+                return parseInt(json.id_anuncio);
+            } else {
+                console.log("Error en la respuesta del servidor:", response.status, response.statusText);
+                return 'Error en la respuesta del servidor: ' + response.statusText;
+            }
         }
 
         // PASO 3
@@ -500,26 +510,32 @@
 
                 // 2. Crear Registro
                 const newAdId = await step2_createAdRecord(planId, finalImageUrl || photoUri, title, desc, plan.price);
-
+                if (newAdId === 'pagado') {
+                    alert("Anuncio creado y pagado de tus coints. ¡Gracias por tu compra!");
+                    return;
+                }
+                else if (newAdId ==='esperando pago') {
+                    alert("Anuncio creado pero pendiente de pago. Por favor completa el proceso de pago para activar tu anuncio.");
+                }
+                else if (typeof newAdId === 'string') {
+                    alert("Error creando anuncio: " + newAdId);
+                    return;
+                }
                 // 3. Link Pago
                 let paymentLink = null;
                 try {
                     paymentLink = await step3_getPaymentLink(newAdId, plan);
-                } catch (e) { console.error(e); }
-
-                if (paymentLink) {
-                    if(confirm("Redirigiendo a PayPal para completar tu pago.")) {
+                    if(paymentLink && confirm("Redirigiendo a PayPal para completar tu pago.")) {
                         window.location.href = paymentLink;
+                        return;
                         // O si prefieres la ruta interna como en el código:
                         // window.location.href = 'paypal.html'; 
                     }
-                } else {
-                    alert("Anuncio creado (ID: " + newAdId + "), pero no se obtuvo link de pago.");
-                }
-
+                } catch (e) { console.error(e); }
+                alert("Anuncio creado (ID: " + newAdId + "), pero no se obtuvo link de pago.");
             } catch (error) {
                 console.error(error);
-                alert('Error: ' + error.message);
+                alert('Error: ' + error);
             } finally {
                 setSubmitting(false);
             }

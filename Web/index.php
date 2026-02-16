@@ -110,7 +110,9 @@ if(!isset($_COOKIE['token'])){
             object-fit: cover;
         }
         .user-details { display: none; } /* Oculto en móvil por defecto */
-        .user-name { font-size: 12px; font-weight: bold; color: #fff; display: block;}
+        .user-name > a { font-size: 12px; font-weight: bold; color: #fff; display: block;
+            text-decoration: none;
+        }
         .user-link { font-size: 10px; color: #fff; cursor: pointer; }
 
         /* --- NAVBAR --- */
@@ -345,7 +347,7 @@ if(!isset($_COOKIE['token'])){
                         <div class="user-info">
                             <img id="user-avatar" src="" class="avatar">
                             <div class="user-details">
-                                <span id="user-name" class="user-name">Usuario</span>
+                                <span class="user-name"><a id="user-name" href="./perfil.html">Usuario</a></span>
                                 <span class="user-link">Ajustes</span>
                             </div>
                         </div>
@@ -444,6 +446,7 @@ if(!isset($_COOKIE['token'])){
         let state = {
             banners: [],
             productos: [],
+            ofertas: [],
             userProfile: null,
             loading: true,
             bannerIndex: 0
@@ -511,16 +514,33 @@ if(!isset($_COOKIE['token'])){
                     if(resProd.ok) {
                         const data = await resProd.json();
                         // Mapeo
-                        state.productos = Array.isArray(data.producto) ? data.producto.map(item => ({
+                        state.productos = Array.isArray(data.productos) ? data.productos.map(item => ({
                             id: item.anuncio_id || item.id,
                             title: item.titulo || item.nombre,
-                            price: parseFloat(item.costo) || 0,
-                            image: item.url_imagen || item.imagen || MOCK_PHONE_IMG
+                            price: parseFloat(item.precio) || 0,
+                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG
+                        })) : [];
+                        renderProductSections();
+                        console.log(state.productos);
+                    }
+                } catch (e) { console.warn("Fallo productos", e.message); }
+                // B2. Ofertas
+                try {
+                    const resProd = await fetch(`${API_BASE_URL}/obtener_Ofertas.php`);
+                    if(resProd.ok) {
+                        const data = await resProd.json();
+                        // Mapeo
+                        state.ofertas = Array.isArray(data.ofertas) ? data.ofertas.map(item => ({
+                            id: item.anuncio_id || item.id,
+                            title: item.titulo || item.nombre,
+                            price: parseFloat(item.precio) || 0,
+                            descuento: parseFloat(item.descuento) || 0,
+                            fin: item.fecha_finalizacion || '',
+                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG
                         })) : [];
                         renderProductSections();
                     }
                 } catch (e) { console.warn("Fallo productos", e.message); }
-
                 // C. BANNERS
                 try {
                     const resBanners = await fetch(`${API_BASE_URL}/obtener_anuncios.php`);
@@ -584,14 +604,27 @@ if(!isset($_COOKIE['token'])){
                 </div>
             `;
         }
-
+        function createOfertaCardHTML(product) {
+            return `
+                <div class="card">
+                    <div class="card-image-container">
+                        <img src="${product.image}" class="card-image" onerror="this.src='${MOCK_PHONE_IMG}'">
+                        <div class="heart-icon"><ion-icon name="heart-outline"></ion-icon></div>
+                    </div>
+                    <div class="card-title">${product.title}</div>
+                    <div class="card-price"><s>$${product.price.toLocaleString()}</s> <b>$${(product.price * (1 - product.descuento / 100)).toLocaleString()}</b>(${product.descuento}%)</div>
+                    <p>Oferta válida hasta: ${new Date(product.fin).toLocaleDateString()}</p>
+                    <button class="add-button" onclick="handleAddToCart('${product.title}')">Ver detalles</button>
+                </div>
+            `;
+        }
         function renderProductSections() {
-            const ofertas = state.productos.slice(0, 4);
+            const ofertas = state.ofertas.slice(0, 4);
             const recomendados = state.productos.slice(4, 8);
             // Simular nuevos tomando otros o los mismos si hay pocos
             const nuevos = state.productos.length > 8 ? state.productos.slice(8, 12) : state.productos.slice(0, 4);
 
-            document.getElementById('ofertas-grid').innerHTML = ofertas.map(createProductCardHTML).join('');
+            document.getElementById('ofertas-grid').innerHTML = ofertas.map(createOfertaCardHTML).join('');
             document.getElementById('recomendados-grid').innerHTML = recomendados.map(createProductCardHTML).join('');
             document.getElementById('nuevos-grid').innerHTML = nuevos.map(createProductCardHTML).join('');
         }
