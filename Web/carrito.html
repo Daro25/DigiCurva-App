@@ -141,8 +141,8 @@
         <div class="spinner"></div>
     </div>
 
-    <div id="app-content" style="display: none;">
-        
+    <div id="app-container" style="display: none;">
+    <header>       
         <div class="header-bg">
             <div class="header-overlay">
                 <div class="header-content">
@@ -157,9 +157,9 @@
                     </div>
 
                     <div class="user-section">
-                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="avatar" alt="User">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="avatar" alt="User" id="user-avatar">
                         <div class="user-info">
-                            <span class="user-name">Naomi Ruiz</span>
+                            <span class="user-name" id="user-name">Naomi Ruiz</span>
                             <span class="user-link">Ajustes</span>
                         </div>
                     </div>
@@ -181,8 +181,8 @@
                 <div class="nav-item">Categorías <ion-icon name="caret-down" style="font-size: 12px;"></ion-icon></div>
             </div>
         </div>
-
-        <div class="main-layout">
+    </header>
+        <main class="main-layout">
             
             <div class="cart-column">
                 <div class="column-content">
@@ -224,40 +224,98 @@
                 </div>
             </div>
 
-        </div>
+        </main>
     </div>
 
     <script>
-        // DATOS MOCK
+        const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
+        const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
         const MOCK_CART_ITEMS = [
             {
-                id: 'prod_galaxy_a36_5g',
-                name: 'Samsung Galaxy A36 5G',
-                price: 4500.00,
-                quantity: 1,
-                sku: 'SAM-A36-5G-WHT',
-                image: 'https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a356elgbltm/gallery/mx-galaxy-a35-5g-sm-a356-sm-a356elgbltm-540859530?$650_519_PNG$'
+                id: '0',
+                name: '00000',
+                price: 0.00,
+                quantity: 0,
+                sku: '0000',
+                image: MOCK_PHONE_IMG
             }
         ];
-
+        
         // ESTADO
-        let cartItems = [];
-        let paymentMethod = 'card';
-        let isProcessing = false;
-        let total = 0;
+        var cartItems = [];
+        var userProfile = null;
+        var paymentMethod = 'card';
+        var isProcessing = false;
+        var total = 0;
 
-        // INICIALIZACIÓN (Simulando useEffect)
-        window.onload = function() {
-            setTimeout(() => {
-                cartItems = MOCK_CART_ITEMS;
-                renderCart();
-                calculateTotal();
-                document.getElementById('loading-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-            }, 600);
-        };
+        // --- 1. INICIALIZACIÓN ---
+        window.addEventListener('load', () => {
+            initApp();
+        });
+
+        async function initApp() {
+            // Esperar 3 segundos (Lógica visual solicitada)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Cargar datos
+            await fetchRemoteData();
+            // Ocultar loading y mostrar app
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+        }
+        async function fetchRemoteData() {
+            try {
+                // A. PERFIL
+                try {
+                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`);
+                    if(resPerfil.ok) {
+                        const data = await resPerfil.json();
+                        userProfile = {
+                            nombre: data.perfil?.nombre || 'Usuario',
+                            avatar: data.perfil?.foto_perfil_url || DEFAULT_AVATAR
+                        };
+                        updateHeaderUI();
+                    }
+                } catch (e) { console.warn("Fallo perfil", e); }
+
+                // B. PRODUCTOS
+                try {
+                    const resProd = await fetch(`${API_BASE_URL}/obtener_carrito.php`);
+                    if(resProd.ok) {
+                        const data = await resProd.json();
+                        // Mapeo
+                        cartItems = Array.isArray(data.carrito) ? data.carrito.map(item => ({
+                            id: item.producto_id || '0',
+                            name: item.nombre || 'Producto sin nombre',
+                            price: parseFloat(item.precio) || 0.00,
+                            quantity: item.cantidad || 1,
+                            sku: item.sku || '0000',
+                            image: item.imagen_url || 'https://via.placeholder.com/150'
+                        })) : [];
+                        if (cartItems.length === 0) {
+                            // Si MOCK_CART_ITEMS ya es un objeto, úsalo en un array [item]
+                            // Si es un array, úsalo directamente. Supongamos que es un objeto:
+                            cartItems = Array.isArray(MOCK_CART_ITEMS) ? MOCK_CART_ITEMS : [MOCK_CART_ITEMS];
+                        }
+                        renderCart();
+                        calculateTotal();
+                        console.log(cartItems);
+                    }
+                } catch (e) { console.warn("Fallo productos", e.message); }
+            } catch (error) {
+                console.error("Error general:", error);
+            }
+        }
 
         // RENDERIZADO
+        function updateHeaderUI() {
+            if (userProfile) {
+                document.getElementById('user-name').textContent = userProfile.nombre;
+                document.getElementById('user-avatar').src = userProfile.avatar;
+            } else {
+                document.getElementById('user-avatar').src = DEFAULT_AVATAR;
+            }
+        }
         function renderCart() {
             const container = document.getElementById('cart-items-container');
             container.innerHTML = cartItems.map(item => `
@@ -267,7 +325,7 @@
                     </div>
                     <div class="item-details">
                         <div class="item-name">${item.name}</div>
-                        <div class="item-price">$${formatCurrency(item.price)}</div>
+                        <div class="item-price">$${item.price}</div>
                     </div>
                 </div>
             `).join('');
@@ -275,11 +333,7 @@
 
         function calculateTotal() {
             total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            document.getElementById('total-amount').textContent = '$' + formatCurrency(total);
-        }
-
-        function formatCurrency(amount) {
-            return amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            document.getElementById('total-amount').textContent = '$' + total;
         }
 
         // INTERACCIÓN
@@ -317,7 +371,7 @@
                 // Simulación de espera de red
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                const alertMsg = `Orden Procesada.\n\nMétodo: ${paymentMethod.toUpperCase()}\nTotal: $${formatCurrency(total)}\nURL: ${finalUrl}`;
+                const alertMsg = `Orden Procesada.\n\nMétodo: ${paymentMethod.toUpperCase()}\nTotal: $${total}\nURL: ${finalUrl}`;
                 alert(alertMsg);
 
             } catch (error) {

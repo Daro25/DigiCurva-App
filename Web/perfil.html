@@ -41,6 +41,36 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        .hero-card {
+            width: 450px; /* Ocupa todo el contenedor */
+            height: 250px;
+            position: relative;
+            background-color: #eee;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 40px; right: 40px;
+            text-align: right;
+        }
+
+        .hero-title {
+            font-size: 32px; color: #fff; font-weight: bold;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+        }
+        .hero-subtitle {
+            font-size: 24px; color: #eee;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+        }
         /* --- HEADER CORREGIDO --- */
         .header-background {
             background-image: url('assets/fondoHome.jpg'); /* Tu imagen de fondo */
@@ -376,7 +406,7 @@
             </div>
 
             <h2 class="section-title">Anuncios Activos</h2>
-            <div class="empty-state" id="anuncios_banner">
+            <div class="empty-state" id="carousel-track">
                 <p>No tienes ningún anuncio activo</p>
                 <button class="btn-grey" onclick="goToCreateAd()">Añadir Anuncio</button>
             </div>
@@ -513,7 +543,7 @@
 
             // Ocultar loading y mostrar app
             document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
+            //document.getElementById('app-container').style.display = 'block';
 
             // Iniciar carrusel automático si hay banners
             if (state.banners.length > 1) {
@@ -530,6 +560,16 @@
                     const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`);
                     if(resPerfil.ok) {
                         const data = await resPerfil.json();
+                        if (!data.success) {
+                            if (data.error === 'Sesión no encontrada o expirada') {
+                                alert('Su inicio de sesión ya expiró, inicia sesión de nuevo.');
+                                window.location.href='login.html';
+                                return;
+                            } else {
+                                alert(data.error)
+                                return
+                            }
+                        }
                         state.userProfile = {
                             nombre: data.perfil?.nombre || 'Usuario',
                             avatar: data.perfil?.foto_perfil_url || DEFAULT_AVATAR,
@@ -558,7 +598,9 @@
                             id: item.anuncio_id || item.id,
                             title: item.titulo || item.nombre,
                             price: parseFloat(item.precio) || 0,
-                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG
+                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
+                            descripcion: item.descripcion || '',
+                            existencia: item.cantidad_existencia || 0
                         })) : [];
                         renderProductSections();
                         console.log(state.productos);
@@ -582,7 +624,9 @@
                             price: parseFloat(item.precio) || 0,
                             descuento: parseFloat(item.descuento) || 0,
                             fin: item.fecha_finalizacion || '',
-                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG
+                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
+                            descripcion: item.descripcion || '',
+                            existencia: item.cantidad_existencia || 0
                         })) : [];
                         renderProductSections();
                     }
@@ -639,20 +683,23 @@
 
             track.innerHTML = state.banners.map(banner => `
                 <div class="hero-card">
-                    <img src="${banner.imageUrl || MOCK_PHONE_IMG}" class="hero-image" onerror="this.src='${MOCK_PHONE_IMG}'">
+                    <img src="${banner.imageUrl || MOCK_PHONE_IMG}" class="hero-image" onerror="this.src='${MOCK_PHONE_IMG}'"
+                    width="450" height="250"
+                     onclick='handleToProduct("${empaquetado(product)}")'>
                     <div class="hero-overlay">
                         <div class="hero-title">${banner.title}</div>
                         <div class="hero-subtitle">${banner.subtitle}</div>
                     </div>
                 </div>
             `).join('');
+            track.innerHTML += `<button class="btn-grey" onclick="goToCreateAd()">Añadir Anuncio</button>`;
         }
 
         // Lógica de productos
         function createProductCardHTML(product) {
             return `
                 <div class="product-card">
-                    <img src="${product.image}" class="prod-img" onerror="this.src='${MOCK_PHONE_IMG}'">
+                    <img src="${product.image}" class="prod-img" onerror="this.src='${MOCK_PHONE_IMG}'" onclick='handleToProduct("${empaquetado(product)}")'>
                     <div class="prod-title">${product.title}</div>
                     <div class="prod-price">$${product.price.toLocaleString()}</div>
                 </div>
@@ -707,6 +754,17 @@
         function navigateTo(path) {
             console.log("Navegando a:", path);
             window.location.href = path; // O la lógica que prefieras
+        }
+
+        function handleToProduct(parameter) {
+            let param1 = encodeURIComponent(parameter);
+            let param2 = encodeURIComponent(empaquetado(state.userProfile));
+            window.location.href = `producto.html?product=${param1}&user=${param2}`;
+        }
+        function empaquetado(producto) {
+            let product = JSON.stringify(producto);
+            let base64Product = btoa(product);
+            return base64Product.toString();
         }
     </script>
 

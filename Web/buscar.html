@@ -1,18 +1,9 @@
-<?php
-if(!isset($_COOKIE['token'])){
-    //echo "<script>alert('".$_COOKIE['token']."'); window.location.href = '/login';</script>";
-    header("Location: login.html");
-    exit();
-}
-?>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DigiCurva</title>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <title>Buscando</title>
     <style>
         /* --- ESTILOS GLOBAL Y RESET --- */
         * {
@@ -370,35 +361,25 @@ if(!isset($_COOKIE['token'])){
                             </div>
 
                             <div class="search-container">
-                                <input type="text" id="search-input" class="search-input" placeholder="Buscar" onchange="handleSearch()">
+                                <input type="text" id="search-input" class="search-input" placeholder="Buscar">
                                 <ion-icon name="search" style="font-size:20px; color:black; cursor:pointer;" onclick="handleSearch()"></ion-icon>
                             </div>
 
                             <div class="header-icons">
                                 <button class="header-icon-btn"><ion-icon name="heart-outline"></ion-icon></button>
-                                <button class="header-icon-btn" onclick="handleAddToCart(title)"><ion-icon name="cart-outline"></ion-icon></button>
+                                <button class="header-icon-btn"><ion-icon name="cart-outline"></ion-icon></button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </header>
-
         <div class="content-wrapper">
-            <button class="create-ad-btn" onclick="navigateTo('./Anuncio.html')">+ Crear anuncio</button>
-
-            <div id="banner-section" class="banner-container">
-                <div id="carousel-track" class="carousel-track">
-                    </div>
-            </div>
 
             <h2 class="section-title">Ofertas</h2>
             <div id="ofertas-grid" class="grid-container"></div>
 
-            <h2 class="section-title">Recomendados para ti</h2>
-            <div id="recomendados-grid" class="grid-container"></div>
-
-            <h2 class="section-title">Productos nuevos</h2>
+            <h2 class="section-title">Productos</h2>
             <div id="nuevos-grid" class="grid-container"></div>
         </div>
 
@@ -434,18 +415,27 @@ if(!isset($_COOKIE['token'])){
                 </div>
             </div>
         </footer>
-
     </div>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const search = urlParams.get('search');
+console.log(search);
+const inputSearch = document.getElementById('search-input');
+inputSearch.value = search;
+    function handleSearch() {
+            const text = document.getElementById('search-input').value;
+            if (text.trim()) {
+                window.location.href = `buscar.html?search=${encodeURIComponent(text)}`;
+            }
+        }
 
-    <script>
-        // CONFIGURACIÓN
+// CONFIGURACIÓN
         const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
 
         // ESTADO GLOBAL
         let state = {
-            banners: [],
             productos: [],
             ofertas: [],
             userProfile: null,
@@ -461,32 +451,41 @@ if(!isset($_COOKIE['token'])){
         async function initApp() {
             // Esperar 3 segundos (Lógica visual solicitada)
             await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Simular SesionUsuario.getId() -> Asumimos ID 1 para la demo
+            const userId = "1"; // Cambia esto si tienes lógica real de localStorage
+
+            if (!userId) {
+                alert("No hay usuario. Redirigiendo a Login...");
+                window.location.href = '/login'; 
+                return;
+            }
+
+            console.log(`Usuario autenticado: ${userId}. Cargando datos remotos...`);
+            
             // Cargar datos
-            await fetchRemoteData();
+            await fetchRemoteData(userId);
 
             // Ocultar loading y mostrar app
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'block';
-
-            // Iniciar carrusel automático si hay banners
-            if (state.banners.length > 1) {
-                startCarousel();
-            }
         }
 
         // --- 2. FETCH DE DATOS ---
-        async function fetchRemoteData() {
+        async function fetchRemoteData(userId) {
             try {
                 // A. PERFIL
                 try {
-                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`);
+                    const data = {
+                        usuario_id: userId
+                    }
+                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
                     if(resPerfil.ok) {
                         const data = await resPerfil.json();
-                        if(!data.success) {
-                            console.warn("Error al obtener perfil:", data);
-                            alert(data.error+'\nRedirigiendo al login.');
-                            window.location.href = 'login.html';
-                        }
                         state.userProfile = {
                             nombre: data.perfil?.nombre || 'Usuario',
                             avatar: data.perfil?.foto_perfil_url || DEFAULT_AVATAR
@@ -497,7 +496,12 @@ if(!isset($_COOKIE['token'])){
 
                 // B. PRODUCTOS
                 try {
-                    const resProd = await fetch(`${API_BASE_URL}/Listar_productos.php`);
+                    let formData = new FormData();
+                    formData.append('search', search);
+                    const resProd = await fetch(`${API_BASE_URL}/search.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
                     if(resProd.ok) {
                         const data = await resProd.json();
                         // Mapeo
@@ -509,15 +513,6 @@ if(!isset($_COOKIE['token'])){
                             descripcion: item.descripcion || '',
                             existencia: item.cantidad_existencia || 0
                         })) : [];
-                        console.log(state.productos);
-                    }
-                } catch (e) { console.warn("Fallo productos", e.message); }
-                // B2. Ofertas
-                try {
-                    const resProd = await fetch(`${API_BASE_URL}/obtener_Ofertas.php`);
-                    if(resProd.ok) {
-                        const data = await resProd.json();
-                        // Mapeo
                         state.ofertas = Array.isArray(data.ofertas) ? data.ofertas.map(item => ({
                             id: item.anuncio_id || item.id,
                             title: item.titulo || item.nombre,
@@ -528,24 +523,11 @@ if(!isset($_COOKIE['token'])){
                             descripcion: item.descripcion || '',
                             existencia: item.cantidad_existencia || 0
                         })) : [];
+                        console.log(data);
+                        
                         renderProductSections();
                     }
                 } catch (e) { console.warn("Fallo productos", e.message); }
-                // C. BANNERS
-                try {
-                    const resBanners = await fetch(`${API_BASE_URL}/obtener_anuncios.php`);
-                    if(resBanners.ok) {
-                        const data = await resBanners.json();
-                        state.banners = Array.isArray(data.anuncios_activos) ? data.anuncios_activos.map(item => ({
-                            id: item.anuncio_id || item.id,
-                            imageUrl: item.url_imagen || item.imagen,
-                            title: item.titulo || '',
-                            subtitle: item.mensaje || ''
-                        })) : [];
-                        renderBanners();
-                        console.log(data);
-                    }
-                } catch (e) { console.warn("Fallo banners", e); }
 
             } catch (error) {
                 console.error("Error general:", error);
@@ -563,30 +545,13 @@ if(!isset($_COOKIE['token'])){
             }
         }
 
-        function renderBanners() {
-            const track = document.getElementById('carousel-track');
-            if (state.banners.length === 0) {
-                document.getElementById('banner-section').style.display = 'none';
-                return;
-            }
-
-            track.innerHTML = state.banners.map(banner => `
-                <div class="hero-card">
-                    <img src="${banner.imageUrl || MOCK_PHONE_IMG}" class="hero-image" onerror="this.src='${MOCK_PHONE_IMG}'">
-                    <div class="hero-overlay">
-                        <div class="hero-title">${banner.title}</div>
-                        <div class="hero-subtitle">${banner.subtitle}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
         // Lógica de productos
         function createProductCardHTML(product) {
             return `
                 <div class="card">
                     <div class="card-image-container">
-                        <img src="${product.image}" class="card-image" onerror="this.src='${MOCK_PHONE_IMG}'" onclick='handleToProduct("${empaquetado(product)}")'>
+                        <img src="${product.image}" class="card-image" onerror="this.src='${MOCK_PHONE_IMG}'"
+                         onclick='handleToProduct("${empaquetado(product)}")'>
                         <div class="heart-icon"><ion-icon name="heart-outline"></ion-icon></div>
                     </div>
                     <div class="card-title">${product.title}</div>
@@ -599,7 +564,8 @@ if(!isset($_COOKIE['token'])){
             return `
                 <div class="card">
                     <div class="card-image-container">
-                        <img src="${product.image}" class="card-image" onerror="this.src='${MOCK_PHONE_IMG}'" onclick='handleToProduct("${empaquetado(product)}")'>
+                        <img src="${product.image}" class="card-image" onerror="this.src='${MOCK_PHONE_IMG}'"
+                         onclick='handleToProduct("${empaquetado(product)}")'>
                         <div class="heart-icon"><ion-icon name="heart-outline"></ion-icon></div>
                     </div>
                     <div class="card-title">${product.title}</div>
@@ -610,45 +576,22 @@ if(!isset($_COOKIE['token'])){
             `;
         }
         function renderProductSections() {
-            const ofertas = state.ofertas.slice(0, 4);
-            const recomendados = state.productos.slice(4, 8);
-            // Simular nuevos tomando otros o los mismos si hay pocos
-            const nuevos = state.productos.length > 8 ? state.productos.slice(8, 12) : state.productos.slice(0, 4);
-
-            document.getElementById('ofertas-grid').innerHTML = ofertas.map(createOfertaCardHTML).join('');
-            document.getElementById('recomendados-grid').innerHTML = recomendados.map(createProductCardHTML).join('');
-            document.getElementById('nuevos-grid').innerHTML = nuevos.map(createProductCardHTML).join('');
-        }
-
-        // --- 4. LÓGICA CARRUSEL ---
-        function startCarousel() {
-            const track = document.getElementById('carousel-track');
-            setInterval(() => {
-                state.bannerIndex++;
-                if (state.bannerIndex >= state.banners.length) {
-                    state.bannerIndex = 0;
-                }
-                const translateX = -(state.bannerIndex * 100);
-                track.style.transform = `translateX(${translateX}%)`;
-            }, 4000);
-        }
-
-        // --- 5. EVENTOS ---
-        function handleSearch() {
-            const text = document.getElementById('search-input').value;
-            if (text.trim()) {
-                window.location.href = `buscar.html?search=${encodeURIComponent(text)}`;
+            if (state.ofertas.length == 0) {
+                document.getElementById('ofertas-grid').innerHTML = '<p>Sin resultados.</p>';
+            }
+            if (state.productos.length == 0) {
+                document.getElementById('nuevos-grid').innerHTML = '<p>Sin resultados.</p>';
+            }
+            if (state.ofertas.length > 0 && state.productos.length > 0) {
+                const ofertas = state.ofertas;
+                // Simular nuevos tomando otros o los mismos si hay pocos
+                const nuevos = state.productos;
+                
+                document.getElementById('ofertas-grid').innerHTML = ofertas.map(createOfertaCardHTML).join('');
+                document.getElementById('nuevos-grid').innerHTML = nuevos.map(createProductCardHTML).join('');
             }
         }
-        
-        function handleAddToCart() {
-            window.location.href = `carrito.html`;
-        }
-
-        function navigateTo(path) {
-            console.log("Navegando a:", path);
-            window.location.href = path; // O la lógica que prefieras
-        }
+        //Eventos
         function handleToProduct(parameter) {
             let param1 = encodeURIComponent(parameter);
             let param2 = encodeURIComponent(empaquetado(state.userProfile));
@@ -659,6 +602,6 @@ if(!isset($_COOKIE['token'])){
             let base64Product = btoa(product);
             return base64Product.toString();
         }
-    </script>
+</script>
 </body>
 </html>
