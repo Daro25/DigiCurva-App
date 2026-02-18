@@ -360,10 +360,7 @@
                                 </div>
                             </div>
 
-                            <div class="search-container">
-                                <input type="text" id="search-input" class="search-input" placeholder="Buscar">
-                                <ion-icon name="search" style="font-size:20px; color:black; cursor:pointer;" onclick="handleSearch()"></ion-icon>
-                            </div>
+                            <div class="search-container" id="search-container"></div>
 
                             <div class="header-icons">
                                 <button class="header-icon-btn"><ion-icon name="heart-outline"></ion-icon></button>
@@ -420,9 +417,13 @@
 const urlParams = new URLSearchParams(window.location.search);
 const search = urlParams.get('search');
 console.log(search);
-const inputSearch = document.getElementById('search-input');
-inputSearch.value = search;
-    function handleSearch() {
+loquesea();
+function loquesea() {
+    let container = document.getElementById('search-container');
+    container.innerHTML= `<input type="text" id="search-input" class="search-input" placeholder="Buscar" value="${search}" onchange="handleSearch()">
+                                <ion-icon name="search" style="font-size:20px; color:black; cursor:pointer;" onclick="handleSearch()"></ion-icon>`;
+}
+        function handleSearch() {
             const text = document.getElementById('search-input').value;
             if (text.trim()) {
                 window.location.href = `buscar.html?search=${encodeURIComponent(text)}`;
@@ -445,7 +446,7 @@ inputSearch.value = search;
 
         // --- 1. INICIALIZACIÓN ---
         window.addEventListener('load', () => {
-            initApp();
+            initApp(); 
         });
 
         async function initApp() {
