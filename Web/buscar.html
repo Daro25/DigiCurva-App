@@ -507,15 +507,15 @@ function loquesea() {
                         const data = await resProd.json();
                         // Mapeo
                         state.productos = Array.isArray(data.productos) ? data.productos.map(item => ({
-                            id: item.anuncio_id || item.id,
+                            producto_id: item.producto_id || 0,
                             title: item.titulo || item.nombre,
                             price: parseFloat(item.precio) || 0,
                             image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
                             descripcion: item.descripcion || '',
                             existencia: item.cantidad_existencia || 0
                         })) : [];
-                        state.ofertas = Array.isArray(data.ofertas) ? data.ofertas.map(item => ({
-                            id: item.anuncio_id || item.id,
+                        state.ofertas = Array.isArray(data.ofertas) ? data.ofertas.map(item => ({ 
+                            producto_id: item.producto_id || 0,
                             title: item.titulo || item.nombre,
                             price: parseFloat(item.precio) || 0,
                             descuento: parseFloat(item.descuento) || 0,

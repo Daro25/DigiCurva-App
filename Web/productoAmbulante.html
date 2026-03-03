@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir Producto - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIABLES Y RESET --- */
+        :root {
+            --primary-blue: #3b82f6; /* Azul brillante del botón check */
+            --header-bg-color: rgba(56, 189, 248, 0.4);
+            --bg-body: #fff;
+            --grey-placeholder: #e0e0e0;
+            --border-color: #ccc;
+            --max-width: 1200px;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-body); color: #333; padding-bottom: 80px; }
+
+        /* --- HEADER (Versión Dashboard Vendedor) --- */
+        .header-background {
+            background-image: url('assets/fondoHome.jpg');
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-container { background-color: var(--header-bg-color); width: 100%; padding: 10px 0; }
+        .header-content {
+            max-width: var(--max-width); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-weight: 900; font-size: 24px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        
+        /* Menú específico de esta vista */
+        .nav-menu { display: flex; gap: 25px; font-size: 15px; font-weight: 500; color: #000; } /* Texto negro en este header según imagen */
+        .nav-menu span { cursor: pointer; transition: color 0.2s; }
+        .nav-menu span:hover { color: #fff; }
+
+        .user-menu { display: flex; align-items: center; gap: 15px; color: #fff; font-size: 14px; }
+        .user-mini-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Top Bar: Título y Acciones */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px;
+        }
+        .page-title { font-size: 32px; font-weight: 500; color: #000; }
+
+        .actions-group { display: flex; align-items: center; gap: 15px; }
+
+        .btn-offer {
+            background-color: #e0e0e0; border: 1px solid #ccc;
+            padding: 10px 20px; border-radius: 6px;
+            font-weight: 500; cursor: pointer; font-size: 14px;
+        }
+        .btn-offer:hover { background-color: #d5d5d5; }
+
+        /* Botones Circulares Grandes */
+        .big-icon-btn {
+            width: 50px; height: 50px;
+            border-radius: 50%; border: none;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        .big-icon-btn:active { transform: scale(0.95); }
+        
+        .btn-delete { background-color: #e0e0e0; color: #333; }
+        .btn-save { background-color: #3b82f6; color: white; }
+
+        /* --- GRID PRINCIPAL --- */
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Mitad y mitad */
+            gap: 40px;
+        }
+
+        /* --- COLUMNA IZQUIERDA (Imágenes) --- */
+        .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+        .main-image-placeholder {
+            width: 100%; height: 300px;
+            background-color: #e0e0e0;
+            border-radius: var(--radius);
+            display: flex; justify-content: center; align-items: center;
+            color: #999; font-size: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        .main-image-placeholder img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        .thumbnails-row { display: flex; gap: 10px; }
+        
+        .thumb-box {
+            width: 60px; height: 60px;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .thumb-box.active { border-color: var(--primary-blue); }
+
+        /* Botones carga pequeños */
+        .upload-btns-row { display: flex; gap: 10px; align-items: center; }
+        .btn-circle-sm {
+            width: 45px; height: 45px;
+            border-radius: 50%; border: none;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 22px; cursor: pointer; color: white;
+        }
+        .btn-cam { background-color: var(--primary-blue); }
+        .btn-file { background-color: #888; }
+        
+        .limit-text { font-size: 14px; color: #888; margin-left: 10px; }
+
+        /* Selects Categoría */
+        .select-group { margin-top: 10px; }
+        .label-title { font-size: 18px; font-weight: 500; margin-bottom: 10px; display: block; }
+        
+        .custom-select {
+            width: 100%; padding: 12px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; background: #fff;
+            margin-bottom: 20px;
+        }
+
+        /* --- COLUMNA DERECHA (Datos) --- */
+        .right-col { display: flex; flex-direction: column; gap: 30px; }
+
+        .info-card {
+            border: 1px solid #ccc;
+            border-radius: var(--radius);
+            padding: 20px;
+            background: #fff;
+        }
+
+        .input-block { margin-bottom: 20px; }
+        .input-block:last-child { margin-bottom: 0; }
+        
+        .input-label { display: block; font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+        .inline { display: inline-block; margin-right: auto;  }
+        .text-input {
+            width: 100%; padding: 10px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; outline: none;
+        }
+        .number-input {
+            width: 100px;
+            margin-right: 20px;
+            display: inline-block;
+        }
+        .text-input:focus { border-color: var(--primary-blue); }
+
+        .textarea-input {
+            width: 100%; padding: 10px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; outline: none; resize: none;
+            height: 180px;
+        }
+
+        .additional-info-box {
+            border: 1px solid #ccc;
+            border-radius: var(--radius);
+            padding: 10px;
+            height: 150px;
+        }
+        .additional-textarea {
+            width: 100%; height: 100%;
+            border: none; outline: none; resize: none;
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .editor-grid { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .actions-group { width: 100%; justify-content: space-between; }
+        }
+        #visor-dron {
+            width: 600px;
+            height: 400px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 12px;
+            background-color: #000;
+            border: 2px solid #333;
+        }
+
+        /* 2. LA IMAGEN PRINCIPAL */
+        .mapa-render {
+            position: absolute;
+            top: 0; left: 0;
+            width: auto;
+            height: 400%; /* El tamaño masivo para dar profundidad */
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transform-origin: top left;
+            will-change: transform;
+            /* El efecto que pediste (se controla desde JS para no dar lag al arrastrar) */
+            transition: transform 1s ease; 
+        }
+        .estudent{
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 4;
+            width: 40px; height: auto;
+            user-select: none;
+            touch-action: none;
+            display: none;
+        }
+        .estudents>img{
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            z-index: 4;
+            width: 40px; height: auto;
+            user-select: none;
+            touch-action: none;
+        }
+        .estudents{
+            position: absolute;
+            z-index: 5;
+            display: none;
+            width: 40px;
+            height: 40px;
+        }
+        .mapa-render:active {
+            cursor: grabbing;
+        }
+        .mssgMap{
+            color: #e4e3e3;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            cursor: grabbing;
+            user-select: none;
+            touch-action: none;
+            transform-origin: top left;
+            z-index: 80;
+        }
+        .etiqueta{
+            position: absolute;
+            color: cyan;
+            font-weight: bolder;
+            letter-spacing: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            background-color: #333333cb;
+            display: inline-block;
+            z-index: 1;
+            user-select: none;
+            touch-action: none;
+        }
+        .numberStudent{
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            color: white;
+            font-weight: bolder;
+            letter-spacing: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            background-color: #333333cb;
+            display: inline-block;
+            z-index: 1;
+            user-select: none;
+            touch-action: none;
+            border-radius: 50%;
+            padding: 2px;
+        }
+        .radar{
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: absolute;
+            animation: radar 2s infinite;
+            z-index: 3;
+            display: none;
+        }
+        .radar::before{
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transition: translate(-50%,-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #fff;
+        }
+        @keyframes radar {
+            0%{
+                box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.5);
+            }
+            100%{
+                box-shadow: 0 0 0 200px rgba(0, 255, 255, 0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-background">
+        <div class="header-container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="./assets/icon.png" style="height: 30px;">
+                    <span class="logo-text">DigiCurva</span>
+                </div>
+                <div class="nav-menu">
+                    <ion-icon name="home-outline" style="font-size: 20px; cursor: pointer;"></ion-icon>
+                    <span>Inventario</span>
+                    <span>Ordenes</span>
+                    <span>Anuncios</span>
+                    <span>Reportes</span>
+                    <span>Rendimiento</span>
+                </div>
+                <div class="user-menu">
+                    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
+                            <span style="font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Naomi Ruiz</span>
+                            <span style="font-size: 11px; color: #eee;">Ajustes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        
+        <form id="formulario" enctype="multipart/form-data">
+        <div class="top-bar">
+            <h1 class="page-title">Añadir producto</h1>
+            <div class="actions-group">
+                <button type="button" class="big-icon-btn btn-delete" onclick="confirmDelete()"><ion-icon name="trash-outline"></ion-icon></button>
+                <button type="submit" class="big-icon-btn btn-save"><ion-icon name="checkmark-outline"></ion-icon></button>
+            </div>
+        </div>
+
+        <div class="editor-grid">
+            <div class="left-col">
+                
+                <details class="info-card" id="details" open><summary>Descripción.</summary>
+                    <div class="input-block">
+                        <label class="input-label" for="nombre">Título</label>
+                        <input type="text" name="nombre" class="text-input" placeholder="" required>
+                    </div>
+                    <input type="url" name="imagen_url" hidden id="url_ok_imagen">
+                    <div class="input-block">
+                        <label class="input-label" for="descripcion">Descripción</label>
+                        <textarea class="textarea-input" name="descripcion" required></textarea>
+                    </div>
+
+                    <div class="input-block inline">
+                        <label class="input-label inline" for="precio">Precio: </label>
+                        <input type="number" name="precio" class="text-input number-input" placeholder="" required>
+                    </div>
+
+                    <div class="input-block inline">
+                        <label class="input-label inline" for="activo">Activo: </label>
+                        <input  type="radio" name="activo" value="1" onchange="vender(true)">Sí<pre class="inline">  </pre>
+                        <input type="radio" name="activo" value="0" checked onchange="vender(false)">No<pre class="inline">  </pre>
+                        <input type="button" value="siquiente" id="cerrarDetail">
+                    </div>
+                </details>
+                <div class="main-image-placeholder" id="mainPreview">
+                    <img id="imgDisplay" src="">
+                    <span id="placeholderText">Vista previa</span>
+                </div>
+                <div class="upload-btns-row">
+                    <button type="button" class="btn-circle-sm btn-file" onclick="triggerUpload()"><ion-icon name="document-text-outline"></ion-icon></button>
+                    <button type="button" class="btn-circle-sm btn-cam" onclick="triggerUpload()"><ion-icon name="camera-outline"></ion-icon></button>
+                    <!--span class="limit-text">* 4 fotos max.</span-->
+                    <input type="file" name="image" id="fileInput" hidden accept="image/*" onchange="handleFile(this)">
+                    <input type="text" name="name" id="nombreIMG" hidden>
+                </div>
+                <div class="select-group">
+                    <label class="label-title" for="categoria">Categoría del producto</label>
+                    <select class="custom-select" id="categoria" name="categoria" required>
+                        <option>Selecciona una opción.</option>
+                        <option>Electrónica</option>
+                        <option>Hogar</option>
+                        <option>Ropa</option>
+                    </select>
+                    <input type="button" value="Siguiente" id="siguiente2">
+                </div>
+            </div>
+            <div class="right-col">
+                <section class="menuMap">
+                        <label for="control-Zoom">Zoom: </label>
+                        <input type="range" id="control-Zoom" name="control-Zoom" min="30" max="100" value="75" oninput="inZoom()">
+                        <div class="input-block inline">
+                            <label for="ubicacion" class="input-label inline">¿En que parte del Tec?</label>
+                            <select class="custom-select" id="ubicaciones" name="id_ubicacion"></select>
+                        </div>
+                </section>
+                <div id="visor-dron">
+                    <img class="mapa-render" id="mapa-principal" src="assets/renderItcaG.png" alt="Mapa Base" draggable="false">
+                    <img src="assets/vendedor.png" alt="vendedor" id="vendedor" class="estudent" style="display: block;">
+                    <div id="contentEtiqueta"></div>
+                    <div id="msj1" class="mssgMap">Mueve el mapa para cargar la información.</div>
+                    <div class="radar" id="radar"></div>
+                </div>
+                
+            </div>
+        </div>
+    </form>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
+        var names = [];
+        var xs = [];
+        var ys = [];
+        iniciar();
+        async function iniciar() {
+            try {
+                    const categorias = await fetch(`${API_BASE_URL}/consultar_categorias.php`);
+                    const cateSelect = document.getElementById('categoria');
+                    if(categorias.ok) {
+                        const data = await categorias.json();
+                        if(data.success) {
+                            cateSelect.innerHTML='<option value="Selecciona una opción.">Selecciona una opción.</option>';
+                            data.categorias.forEach(element => {
+                                const option = document.createElement('option');
+                                option.text = element.nombre;
+                                option.value = element.nombre;
+                                cateSelect.appendChild(option);
+                            });
+                        }
+                    }
+            } catch (e) { console.warn("Fallo carga de categorias", e); }
+            try {
+                    const ubicacion = await fetch(`${API_BASE_URL}/consultar_ubicacion.php`);
+                    const ubicSelect = document.getElementById('ubicaciones');
+                    if(ubicacion.ok) {
+                        const data = await ubicacion.json();
+                        if(data.success) {
+                            data.ubicaciones.forEach(element => {
+                                const option = document.createElement('option');
+                                option.text = element.descripcion;
+                                option.value = element.id;
+                                names.push(element.descripcion);
+                                xs.push(element.x);
+                                ys.push(element.y);
+                                ubicSelect.appendChild(option);
+                            });
+                            console.log(data.ubicaciones);
+                            crearEtiquetas();
+                            // Aplicamos el zoom inicial al cargar la página
+                            inZoom(); 
+                        }
+                    }
+            } catch (e) { console.warn("Fallo carga de ubicaciones", e); }
+        }
+        document.getElementById('categoria').onchange = function() {
+            console.log(document.getElementById('categoria').value);
+        }
+        const formulario = document.getElementById('formulario');
+        formulario.addEventListener('submit', async(e)=>{
+            event.preventDefault();
+            const datos = new FormData(formulario);
+            if (document.getElementById('categoria').value == 'Selecciona una opción.') {
+                if(window.confirm('Debes seleccionar una categoria antes de enviar.')){
+                    window.location.href = '#categoria';
+                    return;
+                }else{
+                    alert('ES OBLIGATORIO QUE LO HAGAS!');
+                    window.location.href = '#categoria';
+                    return;
+                }
+            }
+            try {
+                var urlimagen = null;
+                urlimagen = await uploadImage();
+                if (urlimagen == null){
+                    console.log('error de imagen');
+                    return;
+                }
+                urlimagen = urlimagen;
+                console.log(urlimagen);
+                document.getElementById('url_ok_imagen').value = urlimagen;
+                var response = await fetch(`${API_BASE_URL}/crear_productoAmbu.php`,{
+                    method: 'POST',
+                    body: datos
+                });
+                if(response.ok) {
+                    const data = await response.json();
+                    console.log(data);
+                    
+                    if (data.success) {
+                        if(window.confirm(data.resultado+'\n'+'¿Deseas registrar un nuevo producto?')){
+                            location.reload();
+                        }else{
+                            window.history.back();
+                        }
+                    } else {
+                        alert('Error de conexion');
+                        console.log("error de conexion");
+                    }
+                }
+            } catch (error) {
+                alert(error);
+                console.log(error);
+                
+            }
+        });
+        async function uploadImage() {
+            console.log("--- PASO 1: SUBIR FOTO ---");
+
+            // Generar nombre
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+            const filename = `IMG_${timestamp}`;
+            
+            document.getElementById('nombreIMG').value = filename;
+            var formData = new FormData(formulario);
+            const response = await fetch(`${URL_SUBIR_IMAGEN}/subirImageAlternativo.php`, { method: 'POST', body: formData });
+            const json = await response.json();
+
+            if (!response.ok || !json.url) {
+                return null;
+            }
+            console.log("URL Recibida:", json.url);
+            return URL_SUBIR_IMAGEN + '/' + json.url;
+        }
+
+        function confirmDelete() {
+            if(confirm("¿Estás seguro de que quieres eliminar este borrador?")) {
+                alert("Borrador eliminado");
+                window.location.href = 'perfil.html';
+            }
+        }
+
+        // Simulación de carga de imágenes
+        function triggerUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('imgDisplay');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('placeholderText').style.display = 'none';
+                    
+                    // Llenar el primer thumb también
+                    document.querySelector('.thumb-box').style.backgroundImage = `url(${e.target.result})`;
+                    document.querySelector('.thumb-box').style.backgroundSize = 'cover';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function selectThumb(index) {
+            // Lógica para cambiar imagen principal al hacer clic en thumb
+            const thumbs = document.querySelectorAll('.thumb-box');
+            thumbs.forEach(t => t.classList.remove('active'));
+            thumbs[index].classList.add('active');
+        }
+
+        document.getElementById('cerrarDetail').addEventListener('click',function(){
+            window.location.href = '#categoria';
+            document.getElementById('details').open = false});
+        document.getElementById('siguiente2').addEventListener('click',function(){
+            window.location.href = '#ubicaciones';
+        });
+        //-----------------MAPA--------------------------------------
+        const mapa = document.getElementById('mapa-principal');
+        const visor = document.getElementById('visor-dron');
+        const radar = document.getElementById('radar');
+        const vendedor = document.getElementById('vendedor');
+        const selectUbic = document.getElementById('ubicaciones');
+        var arrastrando = false;
+        var iniciado = false;
+        var inicioX = 0, inicioY = 0;
+        var actualX = -557, actualY = -534;
+        var etiquetas = [];
+        var compradores = [];
+        var vendiendo = false;
+        function crearEtiquetas() {
+            const content = document.getElementById('contentEtiqueta');
+            for (let i = 0; i < names.length; i++) {
+                var element = document.createElement('div');
+                element.classList.add('etiqueta');
+                content.appendChild(element);
+                element.textContent = names[i];
+                displayObj(element,null,xs[i],ys[i]);
+                etiquetas.push(element);
+                //crear arrays Bidimencionales en compradores
+                const comprador = {
+                    'n':0,
+                    'element':null
+                }
+                compradores.push(comprador)
+            }
+        }
+        function displayObj(obj, escala, x, y) {
+            const escalaActual = escala || document.getElementById('control-Zoom').value / 100;
+            const anchoConZoom = mapa.clientWidth * escalaActual;
+            const altoConZoom = mapa.clientHeight * escalaActual;
+            const _objPossx = x/100;
+            const _objPossy = y/100;
+            //console.log(_objPossx);
+            
+            let _x = anchoConZoom * _objPossx;
+            let _y = altoConZoom * _objPossy;
+            //console.log(mapa);
+            
+            obj.style.transform = `translate3d(${actualX+_x}px,${actualY+_y}px,0)`;
+        }
+        // --- FUNCIÓN DE ZOOM ---
+        function inZoom() {
+            const valorControl = document.getElementById('control-Zoom').value;
+            const escala = valorControl / 100; // 125 se convierte en 1.25
+            
+            if (iniciado) {
+                // Calculamos límites
+                const anchoConZoom = mapa.clientWidth * escala;
+                const altoConZoom = mapa.clientHeight * escala;
+    
+                const limiteX = visor.clientWidth - anchoConZoom;
+                const limiteY = visor.clientHeight - altoConZoom;
+    
+                if (anchoConZoom > visor.clientWidth) {
+                    actualX = Math.min(0, Math.max(actualX, limiteX));
+                } else {
+                    actualX = 0; 
+                }
+                if (altoConZoom > visor.clientHeight) {
+                    actualY = Math.min(0, Math.max(actualY, limiteY));
+                } else {
+                    actualY = 0; 
+                }
+            } else {
+                iniciado = true;
+            }
+            // Activamos tu transición suave para el zoom
+            for (let i = 0; i < etiquetas.length; i++) {
+                //en etiquetas
+                etiquetas[i].style.transition = 'transform 0.3s ease';
+                displayObj(etiquetas[i], escala, xs[i],ys[i]);
+                //en monitos
+                if (compradores[i] && compradores[i].element) {
+                    compradores[i].element.style.transition = 'transform 0.3s ease';
+                    displayObj(compradores[i].element, escala, xs[i],ys[i]);
+                }
+            }
+            mapa.style.transition = 'transform 0.3s ease';
+            radar.style.transition = 'transform 0.3s ease';
+            vendedor.style.transition = 'transform 0.3s ease';
+            mapa.style.transform = `translate3d(${actualX}px, ${actualY}px, 0) scale(${escala})`;
+            displayObj(radar,escala,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            displayObj(vendedor,escala,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+        }
+
+        // --- LÓGICA DE ARRASTRE ---
+        const iniciarArrastre = (clienteX, clienteY) => {
+            arrastrando = true;
+                
+            // TRUCO: Apagamos la transición al arrastrar para que el movimiento sea instantáneo y sin lag
+            mapa.style.transition = 'none'; 
+            radar.style.transition = 'none';
+            vendedor.style.transition = 'none';
+            for (let i = 0; i < etiquetas.length; i++) {
+                etiquetas[i].style.transition = 'none';
+                if (compradores[i] && compradores[i].element) {
+                    compradores[i].element.style.transition = 'none';
+                }
+            } 
+                
+            inicioX = clienteX - actualX;
+            inicioY = clienteY - actualY;
+            document.body.style.cursor = 'grabbing';
+        };
+
+        const moverArrastre = (clienteX, clienteY) => {
+            if (!arrastrando) return;
+            document.getElementById('msj1').style.display = 'none';
+            let nuevaX = clienteX - inicioX;
+            let nuevaY = clienteY - inicioY;
+
+            // Obtenemos la escala actual del input
+            const escalaActual = document.getElementById('control-Zoom').value / 100;
+
+            // Calculamos límites
+            const anchoConZoom = mapa.clientWidth * escalaActual;
+            const altoConZoom = mapa.clientHeight * escalaActual;
+
+            const limiteX = visor.clientWidth - anchoConZoom;
+            const limiteY = visor.clientHeight - altoConZoom;
+
+            if (anchoConZoom > visor.clientWidth) {
+                nuevaX = Math.min(0, Math.max(nuevaX, limiteX));
+            } else {
+                nuevaX = 0; 
+            }
+
+            if (altoConZoom > visor.clientHeight) {
+                nuevaY = Math.min(0, Math.max(nuevaY, limiteY));
+            } else {
+                nuevaY = 0; 
+            }
+
+            actualX = nuevaX;
+            actualY = nuevaY;
+            //console.log(`(${actualX},${actualY})`);
+            
+            mapa.style.transform = `translate3d(${actualX}px, ${actualY}px, 0) scale(${escalaActual})`;
+            displayObj(radar,escalaActual,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            displayObj(vendedor,escalaActual,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            for (let i = 0; i < etiquetas.length; i++) {
+                displayObj(etiquetas[i], escalaActual, xs[i],ys[i]);
+                if (compradores[i] && compradores[i].element) {
+                    displayObj(compradores[i].element, escalaActual, xs[i],ys[i]);
+                }
+            }
+        };
+
+        const terminarArrastre = () => {
+            arrastrando = false;
+            document.body.style.cursor = 'default';
+        };
+
+        // Eventos de Ratón
+        visor.addEventListener('mousedown', (e) => iniciarArrastre(e.clientX, e.clientY));
+        window.addEventListener('mousemove', (e) => {
+            if(arrastrando) e.preventDefault();
+            moverArrastre(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', terminarArrastre);
+        window.addEventListener('mouseleave', terminarArrastre); // Suelta el mapa si el ratón sale del visor
+
+        // Eventos Táctiles (Móviles)
+        visor.addEventListener('touchstart', (e) => iniciarArrastre(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchmove', (e) => {
+            if(arrastrando) e.preventDefault();
+            moverArrastre(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+        window.addEventListener('touchend', terminarArrastre);
+        selectUbic.addEventListener('change',()=>{
+            displayObj(radar,null,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            displayObj(vendedor,null,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+        });
+        function vender(valor) {
+            vendiendo = valor;
+            if (valor) {
+                radar.style.display='block';
+                for (let i = 0; i < compradores.length; i++) {
+                    if (compradores[i] && compradores[i].element) {
+                        compradores[i].element.style.display='block';
+                    }
+                }
+            } else {
+                radar.style.display='none';
+                for (let i = 0; i < compradores.length; i++) {
+                    if (compradores[i] && compradores[i].element) {
+                        compradores[i].element.style.display='none';
+                    }
+                }
+            }
+        }
+        function createCompradores(optUbic) {
+            let comprador;
+            compradores[optUbic].n += 1;
+            if (compradores[optUbic].n ==1) {
+                comprador = document.createElement('img');
+                comprador.classList.add('estudent');
+                visor.appendChild(comprador);
+                comprador.src = './estudiante.png';
+                comprador.draggable = false;
+            }else{
+                visor.removeChild(compradores[optUbic].element);
+                comprador = document.createElement('div');
+                comprador.classList.add('estudents');
+                visor.appendChild(comprador);
+                comprador.innerHTML = `
+                <img src="./estudiantes.png" alt="vendedor" draggable="false">
+                <div class="numberStudent">${compradores[optUbic].n}</div> 
+                `;
+            }
+            displayObj(comprador,null,xs[optUbic],ys[optUbic]);
+            compradores[optUbic].element = comprador;
+            if (vendiendo) {
+                comprador.style.display='block';
+            } else {
+                comprador.style.display='none';
+            }
+        }
+        let indiceComprador = 0;
+        function seguir(obj) {
+            indiceComprador += 1;
+            const optUbic = document.getElementById('ubicacionC');
+            createCompradores(optUbic.value);
+            obj.value = `Creado ${indiceComprador}, Crear otro.`;
+        }
+    </script>
+
+</body>
+</html>

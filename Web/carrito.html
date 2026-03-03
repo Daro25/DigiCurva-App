@@ -78,7 +78,7 @@
         .column-content { width: 100%; max-width: 800px; }
         .section-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
 
-        .cart-item { display: flex; align-items: center; margin-bottom: 20px; }
+        .cart-item { display: flex; align-items: center; margin-bottom: 20px; position: relative;}
         .item-img-container {
             width: 100px; height: 100px; background: #fff; border-radius: 8px; padding: 5px; margin-right: 20px;
             border: 1px solid #f3f4f6; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -132,6 +132,12 @@
             .main-layout { flex-direction: column; }
             .cart-column, .checkout-column { width: 100%; border-left: none; }
             .search-bar, .user-name, .user-link { display: none; } /* Ocultar en móvil similar a RN */
+        }
+        .cart-item>div>input[type="checkbox"]{
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: 15%;
         }
     </style>
 </head>
@@ -187,19 +193,26 @@
             <div class="cart-column">
                 <div class="column-content">
                     <div class="section-title">Carrito de compras</div>
-                    <div id="cart-items-container">
-                        </div>
+                    <div id="total-amount">Todo el carrito cuesta $0.00</div>
+                    <div id="cart-items-container"></div>
                 </div>
             </div>
 
             <div class="checkout-column">
                 <div class="column-content">
-                    <div class="total-label">Total</div>
-                    <div class="total-amount" id="total-amount">$0.00</div>
+                    <div class="total-label">Total</div><br>
+                    <div class="total-amount" id="total-selected">$0.0</div>
 
                     <div class="payment-header">
                         <div class="payment-title">Metodo de pago</div>
                         <ion-icon name="add" style="font-size: 24px; color: #555;"></ion-icon>
+                    </div>
+
+                    <div class="payment-option" id="opt-coins" onclick="selectPayment('coins')">
+                        <div class="payment-text">
+                            <h4>Usar saldo de cuenta</h4>
+                        </div>
+                        <div class="radio-outer"><div class="radio-inner"></div></div>
                     </div>
 
                     <div class="payment-option selected" id="opt-card" onclick="selectPayment('card')">
@@ -223,7 +236,6 @@
                     </button>
                 </div>
             </div>
-
         </main>
     </div>
 
@@ -248,6 +260,7 @@
         var paymentMethod = 'card';
         var isProcessing = false;
         var total = 0;
+        var tipoPago = 'card';
 
         // --- 1. INICIALIZACIÓN ---
         window.addEventListener('load', () => {
@@ -325,7 +338,13 @@
                     </div>
                     <div class="item-details">
                         <div class="item-name">${item.name}</div>
-                        <div class="item-price">$${item.price}</div>
+                        <div class="item-price">$${(Number(item.price) * Number(item.quantity))}</div>
+                        <div class="item-count">por ${item.quantity} seleccionados.</div>
+                    </div>
+                    <div>
+                        <input type="number" value="${(Number(item.price) * Number(item.quantity))}"
+                        hidden = "true">
+                        <input type="checkbox" checked onchange="addSumahandle(this)">
                     </div>
                 </div>
             `).join('');
@@ -333,13 +352,14 @@
 
         function calculateTotal() {
             total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            document.getElementById('total-amount').textContent = '$' + total;
+            document.getElementById('total-amount').textContent = 'Todo el carro cuesta $' + total;
+            sumaSelected(total);
         }
 
         // INTERACCIÓN
         function selectPayment(method) {
             paymentMethod = method;
-            
+            tipoPago = method;
             // Actualizar UI
             document.getElementById('opt-card').classList.remove('selected');
             document.getElementById('opt-cash').classList.remove('selected');
@@ -396,6 +416,21 @@
                 btn.disabled = false;
                 text.style.display = 'block';
                 spinner.style.display = 'none';
+            }
+        }
+        function sumaSelected(num) {
+            const totalDiv = document.getElementById('total-selected');
+            const total = Number(totalDiv.innerText.substring(1));
+            const message = document.getElementById('total-amount');
+            totalDiv.innerText = '$'+(total + num);
+            message.innerText = 'Lo seleccionado cuesta $'+(total + num);
+        }
+        function addSumahandle(check){
+            const precio = check.previousElementSibling.value;
+            if (check.checked) {
+                sumaSelected(+precio);
+            }else{
+                sumaSelected(-precio);
             }
         }
     </script>

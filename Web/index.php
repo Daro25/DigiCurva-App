@@ -459,8 +459,8 @@ if(!isset($_COOKIE['token'])){
         });
 
         async function initApp() {
-            // Esperar 3 segundos (Lógica visual solicitada)
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Esperar 2 segundos (Lógica visual solicitada)
+            await new Promise(resolve => setTimeout(resolve, 2000));
             // Cargar datos
             await fetchRemoteData();
 
@@ -502,7 +502,7 @@ if(!isset($_COOKIE['token'])){
                         const data = await resProd.json();
                         // Mapeo
                         state.productos = Array.isArray(data.productos) ? data.productos.map(item => ({
-                            id: item.anuncio_id || item.id,
+                            producto_id: item.producto_id || 0,
                             title: item.titulo || item.nombre,
                             price: parseFloat(item.precio) || 0,
                             image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
@@ -519,7 +519,7 @@ if(!isset($_COOKIE['token'])){
                         const data = await resProd.json();
                         // Mapeo
                         state.ofertas = Array.isArray(data.ofertas) ? data.ofertas.map(item => ({
-                            id: item.anuncio_id || item.id,
+                            producto_id: item.producto_id || 0,
                             title: item.titulo || item.nombre,
                             price: parseFloat(item.precio) || 0,
                             descuento: parseFloat(item.descuento) || 0,

@@ -379,7 +379,8 @@
         <div class="left-column">
             
             <div class="profile-header-card">
-                <div class="banner-img"></div> <div class="profile-info-overlay">
+                <!-- <div class="banner-img"></div>--> 
+                <div class="profile-info-overlay">
                     <img src="https://randomuser.me/api/portraits/women/44.jpg" class="big-avatar" alt="Profile" id="user-avatar2">
                     <div class="profile-name-overlay" id="user-name2">user</div>
                 </div>
@@ -595,7 +596,7 @@
                         const data = await resProd.json();
                         // Mapeo
                         state.productos = Array.isArray(data.productos) ? data.productos.map(item => ({
-                            id: item.anuncio_id || item.id,
+                            producto_id: item.producto_id || 0,
                             title: item.titulo || item.nombre,
                             price: parseFloat(item.precio) || 0,
                             image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
@@ -619,7 +620,7 @@
                         const data = await resProd.json();
                         // Mapeo
                         state.ofertas = Array.isArray(data.ofertas) ? data.ofertas.map(item => ({
-                            id: item.anuncio_id || item.id,
+                            producto_id: item.producto_id || 0,
                             title: item.titulo || item.nombre,
                             price: parseFloat(item.precio) || 0,
                             descuento: parseFloat(item.descuento) || 0,
