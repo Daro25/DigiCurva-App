@@ -383,7 +383,6 @@ if(!isset($_COOKIE['token'])){
                 </div>
             </div>
         </header>
-
         <div class="content-wrapper">
             <button class="create-ad-btn" onclick="navigateTo('./Anuncio.html')">+ Crear anuncio</button>
 

@@ -496,7 +496,6 @@
                     console.log('error de imagen');
                     return;
                 }
-                urlimagen = urlimagen;
                 console.log(urlimagen);
                 document.getElementById('url_ok_imagen').value = urlimagen;
                 var response = await fetch(`${API_BASE_URL}/crear_productoAmbu.php`,{
