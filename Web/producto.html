@@ -254,21 +254,6 @@
                 <div class="main-image-card">
                     <img id="mainImage" src="https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063688?$684_547_PNG$" class="main-img">
                 </div>
-                
-                <!--div class="thumbnails-row">
-                    <div class="thumb-box active" onclick="changeImage(this, 'https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063688?$684_547_PNG$')">
-                        <img src="https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063688?$684_547_PNG$" class="thumb-img">
-                    </div>
-                    <div class="thumb-box" onclick="changeImage(this, 'https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063660?$684_547_PNG$')">
-                        <img src="https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063660?$684_547_PNG$" class="thumb-img">
-                    </div>
-                    <div class="thumb-box" onclick="changeImage(this, 'https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063673?$684_547_PNG$')">
-                        <img src="https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063673?$684_547_PNG$" class="thumb-img">
-                    </div>
-                    <div class="thumb-box" onclick="changeImage(this, 'https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063683?$684_547_PNG$')">
-                        <img src="https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063683?$684_547_PNG$" class="thumb-img">
-                    </div>
-                </div-->
             </div>
             <h2 class="section-header">Reseñas</h2>
             <div class="reviews-container">
@@ -389,6 +374,16 @@
             }
         }
         function RenderData(producto) {
+            if (producto.tipe == 'ambulante') {
+                var activo = producto.activo == 1 ? true : false;console.log(activo);
+                
+                document.getElementById('product-title').textContent = producto.title;
+                document.getElementById('product-price').textContent = `$${producto.price}`;
+                document.getElementById('product-description').textContent = producto.descripcion;
+                document.getElementById('product-exist').textContent = 'hasta que el vendedor se quede sin stock \no decida retirar el producto, actualmente ' + (activo ? 'está en '+producto.ubicacion : 'no está disponible.');
+                document.getElementById('mainImage').src = producto.image; // Asumiendo que 'images' es un array de URLs
+                return;
+            }
             document.getElementById('product-title').textContent = producto.title;
             document.getElementById('product-price').textContent = `$${producto.price}`;
             document.getElementById('product-description').textContent = producto.descripcion;

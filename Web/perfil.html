@@ -504,6 +504,7 @@
             <div class="profile-header-card">
                 <!-- <div class="banner-img"></div>--> 
                 <section class="menuMap">
+                    <button onclick="subscribeUser()" class="btn-subscribe">🔔 suscribete</button>
                     <label for="control-Zoom">Zoom: </label>
                     <input type="range" id="control-Zoom" name="control-Zoom" min="50" max="100" value="75" oninput="inZoom()">
                 </section>
@@ -629,6 +630,7 @@
 
     </div>
 
+<script src="http://xampp.local/Implementacion-notificaciones-push/main.js"></script>
     <script>
         // Navegación simulada
         function goToCreateAd() {
@@ -735,10 +737,9 @@
                             price: parseFloat(item.precio) || 0,
                             image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
                             descripcion: item.descripcion || '',
-                            existencia: item.cantidad_existencia || 0
+                            existencia: item.cantidad_existencia || 0,
+                            tipe: 'normal'
                         })) : [];
-                        renderProductSections();
-                        console.log(state.productos);
                     }
                 } catch (e) { console.warn("Fallo productos", e); }
 
@@ -766,7 +767,33 @@
                         renderProductSections();
                     }
                 } catch (e) { console.warn("Fallo productos", e.message); }
-                
+                // B3. Productos ambulantes
+                try {
+                    const resProd = await fetch(`${API_BASE_URL}/obtener_feed.php?is_consulta_vendedor=true`);
+                    if(resProd.ok) {
+                        const data = await resProd.json();
+                        // Mapeo
+                        state.productos = [
+                            ...state.productos,
+                            ...(Array.isArray(data.productos) 
+                                ? data.productos.map(item => ({
+                                    producto_id: item.id || 0,
+                                    title: item.nombre || 'title',
+                                    price: parseFloat(item.precio) || 0,
+                                    image: item.imagen || MOCK_PHONE_IMG,
+                                    descripcion: item.descripcion || '',
+                                    ubicacion: item.ubicacion || 'nil',
+                                    existencia: 'infinite',
+                                    tipe: 'ambulante',
+                                    activo: item.activo || "1"
+                                }))
+                                : [])
+                            ];
+
+                        renderProductSections();
+                        console.log(state.productos);
+                    }
+                } catch (e) { console.warn("Fallo productos ambulantes", e.message); }
                 // C. BANNERS
                 try {
                     let formData = new FormData();
@@ -834,6 +861,7 @@
         function createProductCardHTML(product) {
             return `
                 <div class="product-card">
+                    <input type="button" value="Editar" style="position:absolute; top:5px; right:5px; z-index:10; padding: 4px 8px; font-size: 10px;" onclick='handleToEditProducto("${empaquetado(product)}")'>
                     <img src="${product.image}" class="prod-img" onerror="this.src='${MOCK_PHONE_IMG}'" onclick='handleToProduct("${empaquetado(product)}")'>
                     <div class="prod-title">${product.title}</div>
                     <div class="prod-price">$${product.price.toLocaleString()}</div>
@@ -901,7 +929,17 @@
             let base64Product = btoa(product);
             return base64Product.toString();
         }
-
+        function handleToEditProducto(parameter) {
+            if (parameter.tipe === 'ambulante') {
+                let param1 = encodeURIComponent(parameter);
+                let param2 = encodeURIComponent(empaquetado(state.userProfile));
+                window.location.href = `productoAmbulante.html?product=${param1}`;
+            }else{
+                let param1 = encodeURIComponent(parameter);
+                let param2 = encodeURIComponent(empaquetado(state.userProfile));
+                window.location.href = `writeProducto.html?product=${param1}`;
+            }
+        }
         //--------------------MAPA------------------------
         const mapa = document.getElementById('mapa-principal');
         const visor = document.getElementById('visor-dron');

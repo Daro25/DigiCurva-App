@@ -363,7 +363,7 @@
                         <label class="input-label" for="nombre">Título</label>
                         <input type="text" name="nombre" class="text-input" placeholder="" required>
                     </div>
-                    <input type="url" name="imagen_url" hidden id="url_ok_imagen">
+                    <input type="text" name="imagen_url" hidden id="url_ok_imagen">
                     <div class="input-block">
                         <label class="input-label" for="descripcion">Descripción</label>
                         <textarea class="textarea-input" name="descripcion" required></textarea>
@@ -478,7 +478,7 @@
         const formulario = document.getElementById('formulario');
         formulario.addEventListener('submit', async(e)=>{
             event.preventDefault();
-            const datos = new FormData(formulario);
+            var datos = new FormData(formulario);
             if (document.getElementById('categoria').value == 'Selecciona una opción.') {
                 if(window.confirm('Debes seleccionar una categoria antes de enviar.')){
                     window.location.href = '#categoria';
@@ -498,6 +498,9 @@
                 }
                 console.log(urlimagen);
                 document.getElementById('url_ok_imagen').value = urlimagen;
+                datos = new FormData(formulario);
+                console.log(datos);
+                
                 var response = await fetch(`${API_BASE_URL}/crear_productoAmbu.php`,{
                     method: 'POST',
                     body: datos
