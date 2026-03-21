@@ -103,18 +103,6 @@
             position: relative;
         }
         .main-image-placeholder img { width: 100%; height: 100%; object-fit: cover; display: none; }
-
-        .thumbnails-row { display: flex; gap: 10px; }
-        
-        .thumb-box {
-            width: 60px; height: 60px;
-            background-color: #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-        .thumb-box.active { border-color: var(--primary-blue); }
-
         /* Botones carga pequeños */
         .upload-btns-row { display: flex; gap: 10px; align-items: center; }
         .btn-circle-sm {
@@ -364,6 +352,7 @@
                         <input type="text" name="nombre" class="text-input" placeholder="" required>
                     </div>
                     <input type="text" name="imagen_url" hidden id="url_ok_imagen">
+                    <input type="number" name="producto_id" id="producto_id" value="0" hidden>
                     <div class="input-block">
                         <label class="input-label" for="descripcion">Descripción</label>
                         <textarea class="textarea-input" name="descripcion" required></textarea>
@@ -434,11 +423,6 @@
         var isUpdate = false;
         iniciar();
         async function iniciar() {
-            let producto = getProductFromURL();
-            if (producto){
-                isUpdate = true;
-                renderProductoUrl(producto);
-            }
             try {
                     const categorias = await fetch(`${API_BASE_URL}/consultar_categorias.php`);
                     const cateSelect = document.getElementById('categoria');
@@ -477,6 +461,15 @@
                         }
                     }
             } catch (e) { console.warn("Fallo carga de ubicaciones", e); }
+            /**
+             * La carga de todos los elementos debe ir al final para que los inputs ya estén cargados
+             * con los datos de la base de datos.
+             */
+            let producto = getProductFromURL();
+            if (producto){
+                isUpdate = true;
+                renderProductoUrl(producto);
+            }
         }
         document.getElementById('categoria').onchange = function() {
             console.log(document.getElementById('categoria').value);
@@ -506,8 +499,13 @@
                 document.getElementById('url_ok_imagen').value = urlimagen;
                 datos = new FormData(formulario);
                 console.log(datos);
-                
-                var response = await fetch(`${API_BASE_URL}/crear_productoAmbu.php`,{
+                var action_php = '';
+                if (isUpdate) {
+                    action_php = 'update_productoAmbu.php';
+                } else {
+                    action_php = 'crear_productoAmbu.php';
+                }
+                var response = await fetch(`${API_BASE_URL}/${action_php}`,{
                     method: 'POST',
                     body: datos
                 });
@@ -572,20 +570,9 @@
                     img.src = e.target.result;
                     img.style.display = 'block';
                     document.getElementById('placeholderText').style.display = 'none';
-                    
-                    // Llenar el primer thumb también
-                    document.querySelector('.thumb-box').style.backgroundImage = `url(${e.target.result})`;
-                    document.querySelector('.thumb-box').style.backgroundSize = 'cover';
                 }
                 reader.readAsDataURL(input.files[0]);
             }
-        }
-
-        function selectThumb(index) {
-            // Lógica para cambiar imagen principal al hacer clic en thumb
-            const thumbs = document.querySelectorAll('.thumb-box');
-            thumbs.forEach(t => t.classList.remove('active'));
-            thumbs[index].classList.add('active');
         }
 
         document.getElementById('cerrarDetail').addEventListener('click',function(){
@@ -847,14 +834,24 @@
                 return null;
             }
         }
-        function renderProductoUrl(producto) {
+        function renderProductoUrl(producto) {console.log(producto);
+        
             document.getElementsByName('nombre')[0].value = producto.title;
             document.getElementsByName('imagen_url')[0].value = producto.image;
+            document.getElementById('imgDisplay').src = producto.image;
+            document.getElementById('imgDisplay').style.display = 'block';
+            document.getElementById('placeholderText').style.display = 'none';
             document.getElementsByName('descripcion')[0].value = producto.descripcion;
             document.getElementsByName('precio')[0].value = producto.price;
-            document.getElementsByName('activo')[0].value = producto.activo;
             document.getElementsByName('categoria')[0].value = producto.categoria;
             document.getElementsByName('id_ubicacion')[0].value = producto.idubic;
+            document.getElementById('producto_id').value = producto.producto_id;
+            document.getElementsByName('activo').forEach(radio => {
+                if (radio.value == producto.activo) {
+                    radio.checked = true;
+                    return;//este ultimo llenado debe ir hasta el final
+                }
+            });
 
         }
     </script>

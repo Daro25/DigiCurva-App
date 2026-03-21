@@ -738,7 +738,8 @@
                             image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
                             descripcion: item.descripcion || '',
                             existencia: item.cantidad_existencia || 0,
-                            tipe: 'normal'
+                            tipe: 'normal',
+                            categoria: item.categoria
                         })) : [];
                     }
                 } catch (e) { console.warn("Fallo productos", e); }
@@ -863,7 +864,7 @@
         function createProductCardHTML(product) {
             return `
                 <div class="product-card">
-                    <input type="button" value="Editar" style="position:absolute; top:5px; right:5px; z-index:10; padding: 4px 8px; font-size: 10px;" onclick='handleToEditProducto("${empaquetado(product)}")'>
+                    <input type="button" value="Editar" style="position:absolute; top:5px; right:5px; z-index:10; padding: 4px 8px; font-size: 10px;" onclick='handleToEditProducto("${empaquetado(product)}","${product.tipe}")'>
                     <img src="${product.image}" class="prod-img" onerror="this.src='${MOCK_PHONE_IMG}'" onclick='handleToProduct("${empaquetado(product)}")'>
                     <div class="prod-title">${product.title}</div>
                     <div class="prod-price">$${product.price.toLocaleString()}</div>
@@ -931,8 +932,8 @@
             let base64Product = btoa(product);
             return base64Product.toString();
         }
-        function handleToEditProducto(parameter) {
-            if (parameter.tipe === 'ambulante') {
+        function handleToEditProducto(parameter, tipe) {
+            if (tipe === 'ambulante') {
                 let param1 = encodeURIComponent(parameter);
                 let param2 = encodeURIComponent(empaquetado(state.userProfile));
                 window.location.href = `productoAmbulante.html?product=${param1}`;
