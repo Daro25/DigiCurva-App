@@ -785,7 +785,9 @@
                                     ubicacion: item.ubicacion || 'nil',
                                     existencia: 'infinite',
                                     tipe: 'ambulante',
-                                    activo: item.activo || "1"
+                                    categoria: item.categoria,
+                                    activo: item.activo || "1",
+                                    idubic: item.id_ubicacion
                                 }))
                                 : [])
                             ];

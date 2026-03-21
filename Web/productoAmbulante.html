@@ -817,6 +817,40 @@
             createCompradores(optUbic.value);
             obj.value = `Creado ${indiceComprador}, Crear otro.`;
         }
+
+        /**
+         * cargar edicion de productos
+         * para cuando se edita el producto los datos se jalan
+         * de la url ahorrando una consulta, si el token coincide
+         * con el dueño del producto se realiza la edición del producto.
+         */
+        function getProductFromURL() {
+            try {
+                // 1. Obtener el parámetro 'product' de la URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const param = urlParams.get('product');
+                if (!param) return null;
+                // 2. Decodificar el componente de la URL (deshace el encodeURIComponent)
+                const decodedParam = decodeURIComponent(param);
+                // 3. Decodificar de Base64 a texto (deshace el btoa)
+                const jsonString = atob(decodedParam);
+                // 4. Convertir el texto JSON de nuevo a objeto (deshace el stringify)
+                return JSON.parse(jsonString);
+            } catch (error) {
+                console.error("Error al desempaquetar el producto:", error);
+                return null;
+            }
+        }
+        function renderProductoUrl(producto) {
+            document.getElementsByName('nombre')[0].value = producto.title;
+            document.getElementsByName('imagen_url')[0].value = producto.image;
+            document.getElementsByName('descripcion')[0].value = producto.descripcion;
+            document.getElementsByName('precio')[0].value = producto.price;
+            document.getElementsByName('activo')[0].value = producto.activo;
+            document.getElementsByName('categoria')[0].value = producto.categoria;
+            document.getElementsByName('id_ubicacion')[0].value = producto.idubic;
+
+        }
     </script>
 
 </body>
