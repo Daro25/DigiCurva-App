@@ -431,8 +431,14 @@
         var names = [];
         var xs = [];
         var ys = [];
+        var isUpdate = false;
         iniciar();
         async function iniciar() {
+            let producto = getProductFromURL();
+            if (producto){
+                isUpdate = true;
+                renderProductoUrl(producto);
+            }
             try {
                     const categorias = await fetch(`${API_BASE_URL}/consultar_categorias.php`);
                     const cateSelect = document.getElementById('categoria');

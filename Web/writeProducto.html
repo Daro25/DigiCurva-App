@@ -302,6 +302,31 @@
     <script>
         const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
         const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
+        var isUpdate = false;
+        iniciar();
+        async function iniciar() {
+            let producto = getProductFromURL();
+            if (producto){
+                isUpdate = true;
+                renderProductoUrl(producto);
+            }
+            try {
+                    const categorias = await fetch(`${API_BASE_URL}/consultar_categorias.php`);
+                    const cateSelect = document.getElementById('categoria');
+                    if(categorias.ok) {
+                        const data = await categorias.json();
+                        if(data.success) {
+                            cateSelect.innerHTML='<option value="Selecciona una opción.">Selecciona una opción.</option>';
+                            data.categorias.forEach(element => {
+                                const option = document.createElement('option');
+                                option.text = element.nombre;
+                                option.value = element.nombre;
+                                cateSelect.appendChild(option);
+                            });
+                        }
+                    }
+            } catch (e) { console.warn("Fallo carga de categorias", e); }
+        }
         document.getElementById('existencia').onchange = function() {
             document.getElementById('existencia').value = 
             parseInt(document.getElementById('existencia').value);
