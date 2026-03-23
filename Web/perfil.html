@@ -449,6 +449,85 @@
                 box-shadow: 0 0 0 200px rgba(0, 255, 255, 0.1);
             }
         }
+    /*-------------notificaciones----------------*/
+    .feed-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    /* --- TARJETA DE POST (Muro) --- */
+        .post-card {
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Cabecera del Post (Usuario, Ubicación, Tiempo) */
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 700; font-size: 15px; color: #000; }
+        .user-location { font-size: 13px; font-weight: 700; color: #000; margin-top: 2px; }
+        
+        .post-meta { display: flex; align-items: center; gap: 10px; color: var(--text-gray); font-size: 13px; }
+        .btn-more { background: none; border: none; font-size: 20px; color: var(--text-gray); cursor: pointer; }
+
+        /* Cuerpo del Post (Imagen y Texto) */
+        .post-body {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .post-image-container {
+            width: 130px;
+            height: 130px;
+            flex-shrink: 0;
+            background-color: #f5ece2; /* Fondo beige de la nutella */
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .post-image {
+            width: 100%; height: 100%; object-fit: contain; padding: 5px;
+        }
+
+        .post-content {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #222;
+        }
+
+        /* Footer del Post (Iconos de Interacción) */
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 5px;
+        }
+        .interaction-group {
+            display: flex; gap: 30px;
+        }
+        .interaction-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray); font-size: 14px;
+        }
+        .interaction-btn ion-icon { font-size: 20px; }
+        
+        .share-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray); font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -587,7 +666,7 @@
                     </div>
                 </div>
             </div>
-
+            <div class="feed-grid" id="feed"></div>
             <span class="review-title">Reseñas Del Vendedor</span>
             
             <div class="side-card" style="border: none; background-color: #f9f9f9; box-shadow: none;">
@@ -650,6 +729,7 @@
             banners: [],
             productos: [],
             ofertas: [],
+            pedidos: [],
             userProfile: null,
             loading: true,
             bannerIndex: 0
@@ -816,7 +896,29 @@
                         renderBanners();
                     }
                 } catch (e) { console.warn("Fallo banners", e); }
-
+                //D. Pedidos
+                try {
+                    let formData = new FormData();
+                    formData.append('id', idUser);
+                    const resSolicitud = await fetch(`${API_BASE_URL}/obtener_solicitud_compra_Ambu.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
+                    if(resSolicitud.ok) {
+                        const data = await resSolicitud.json();
+                        state.pedidos = Array.isArray(data.solicitudes) ? data.solicitudes.map(item => ({
+                            id: item.solicitud_id,
+                            imagen: item.imagen,
+                            title: item.title,
+                            ubicacion: item.ubicacion,
+                            id_ubicacion: item.id_ubicacion,
+                            fecha_solicitud: item.fecha_solicitud,
+                            nombre: item.nombre,
+                            cantidad: item.cantidad
+                        })) : [];
+                        renderSolicitud();
+                    }
+                } catch (e) { console.warn("Fallo pedidos", e); }
             } catch (error) {
                 console.error("Error general:", error);
             }
@@ -893,7 +995,77 @@
             </div>
             `;
         }
+        function renderSolicitud() {
+            const track = document.getElementById('feed');
+            if (state.pedidos.length === 0) {
+                track.innerHTML = '<span>Sin solicitudes de compra por ahora.</span>'
+                return;
+            }
 
+            track.innerHTML = state.pedidos.map(pedidos => `
+                <div class="post-card">
+                <div class="post-header">
+                    <div class="user-info">
+                        <span class="user-name">${pedidos.cantidad} ${pedidos.title}</span>
+                        <span class="user-location">${pedidos.ubicacion}</span>
+                    </div>
+                    <div class="post-meta">
+                        <span>${pedidos.fecha_solicitud}</span>
+                        <button class="btn-more"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
+                    </div>
+                </div>
+                
+                <div class="post-body">
+                    <div class="post-image-container" style="background-color: #fff;">
+                        <img src="${pedidos.imagen}" class="post-image" alt="${pedidos.title}">
+                    </div>
+                    <div class="post-content">
+                        ${pedidos.nombre} solicitó este producto, atiendelo.
+                    </div>
+                </div>
+
+                <div class="post-footer">
+                    <div class="interaction-group">
+                        <button onclick="cancelarP(${pedidos.id})">cancelar</button>
+                        <button onclick="atendidoP(${pedidos.id})">Ya lo atendí.</button>
+                    </div>
+                    <button class="share-btn"><ion-icon name="share-outline"></ion-icon></button>
+                </div>
+            </div>
+            `).join('');
+        }
+        async function editarP(str, id) {
+            try {
+                    let formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('status',str);
+                    const resSolicitud = await fetch(`${API_BASE_URL}/estatus_solicitud_compra_Ambu.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
+                    if(resSolicitud.ok) {
+                        const data = await resSolicitud.json();
+                        if (!data.success) alert('Falló la acción por '+data.error);
+                        return data.success;
+                    }
+                } catch (e) { 
+                    alert('Falló la acción.');
+                    console.warn("Fallo pedidos", e); 
+                    return false;
+                }
+        }
+        async function cancelarP(id) {
+            const result = await editarP('cancelada',id);
+            if (result) {
+                location.reload();
+            }
+        }
+        async function atendidoP(id) {
+            const result = await editarP('atendida',id);
+            if (result) {
+                location.reload();
+            }
+        }
         // --- 4. LÓGICA CARRUSEL ---
         function startCarousel() {
             const track = document.getElementById('carousel-track');

@@ -180,6 +180,158 @@
             margin: 0 0 0 -50%;
             position: absolute;
         }
+        /* VENTANAS MODAL*/
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); /* Fondo semitransparente */
+            display: none; /* Oculto por defecto */
+            justify-content: center; align-items: center;
+            z-index: 99;
+        }
+        .modal>form {
+            position: fixed; top: 50%; 
+            left: 50%; 
+            display: block; 
+            overflow: hidden;
+            background-color: white; 
+            border-radius: 20px; 
+            box-shadow: 0 8px 10px rgba(0, 0, 0, 0.199);
+            transform: translate(-50%, -50%); 
+            z-index: 100;
+            height: 500px;
+            width: 400px;
+        }
+        .modal>form>fieldset{
+            position: relative;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        #iniciaSesion{
+            display: none;
+        }
+        /*============Mapa=============*/
+        #visor-dron {
+            width: 300px;
+            height: 300px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 12px;
+            background-color: #000;
+            border: 2px solid #333;
+        }
+        /* 2. LA IMAGEN PRINCIPAL */
+        .mapa-render {
+            position: absolute;
+            top: 0; left: 0;
+            width: auto;
+            height: 400%; /* El tamaño masivo para dar profundidad */
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transform-origin: top left;
+            will-change: transform;
+            /* El efecto que pediste (se controla desde JS para no dar lag al arrastrar) */
+            transition: transform 1s ease; 
+        }
+        .estudent{
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 4;
+            width: 40px; height: auto;
+            user-select: none;
+            touch-action: none;
+            display: none;
+        }
+        .estudents>img{
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            z-index: 4;
+            width: 40px; height: auto;
+            user-select: none;
+            touch-action: none;
+        }
+        .estudents{
+            position: absolute;
+            z-index: 5;
+            display: block;/*cambiada para feed html*/
+            width: 40px;
+            height: 40px;
+        }
+        .mapa-render:active {
+            cursor: grabbing;
+        }
+        .mssgMap{
+            color: #e4e3e3;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            cursor: grabbing;
+            user-select: none;
+            touch-action: none;
+            transform-origin: top left;
+            z-index: 80;
+        }
+        .etiqueta{
+            position: absolute;
+            color: cyan;
+            font-weight: bolder;
+            letter-spacing: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            background-color: #333333cb;
+            display: inline-block;
+            z-index: 1;
+            user-select: none;
+            touch-action: none;
+        }
+        .numberStudent{
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            color: white;
+            font-weight: bolder;
+            letter-spacing: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            background-color: #333333cb;
+            display: inline-block;
+            z-index: 1;
+            user-select: none;
+            touch-action: none;
+            border-radius: 50%;
+            padding: 2px;
+        }
+        .radar{
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: absolute;
+            animation: radar 2s infinite;
+            z-index: 3;
+            display: none;
+        }
+        .radar::before{
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transition: translate(-50%,-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #fff;
+        }
+        @keyframes radar {
+            0%{
+                box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.5);
+            }
+            100%{
+                box-shadow: 0 0 0 200px rgba(0, 255, 255, 0.1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -222,131 +374,48 @@
     </div>
 
     <div class="main-container">
-        
-        <div class="feed-grid" id="feed">
-            
-            <div class="post-card">
-                <div class="post-header">
-                    <div class="user-info">
-                        <span class="user-name">María Lopez</span>
-                        <span class="user-location">Edificio F</span>
-                    </div>
-                    <div class="post-meta">
-                        <span>hace 12min</span>
-                        <button class="btn-more"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
-                    </div>
-                </div>
-                
-                <div class="post-body">
-                    <div class="post-image-container" style="background-color: #f3e5d8;">
-                        <img src="https://assets.stickpng.com/images/580b57fbd9996e24bc43c114.png" class="post-image" alt="Nutella">
-                    </div>
-                    <div class="post-content">
-                        Nutella grande 350g<br>
-                        $85 — la acabo de abrir, pero vendo la mía sin usar<br>
-                        Disponible en lobby ahora mismo
-                    </div>
-                </div>
-
-                <div class="post-footer">
-                    <div class="interaction-group">
-                        <button class="interaction-btn">
-                            <ion-icon name="chatbubble-outline"></ion-icon>
-                        </button>
-                        <button class="interaction-btn" onclick="toggleLike(this)">
-                            <ion-icon name="heart-outline"></ion-icon>
-                            <span>4</span>
-                        </button>
-                    </div>
-                    <button class="share-btn"><ion-icon name="share-outline"></ion-icon></button>
-                </div>
-            </div>
-
-            <div class="post-card">
-                <div class="post-header">
-                    <div class="user-info">
-                        <span class="user-name">Carlos Ramírez</span>
-                        <span class="user-location">Edificio E</span>
-                    </div>
-                    <div class="post-meta">
-                        <span>hace 32 min</span>
-                        <button class="btn-more"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
-                    </div>
-                </div>
-                
-                <div class="post-body">
-                    <div class="post-image-container" style="background-color: #fff;">
-                        <img src="https://m.media-amazon.com/images/I/61tJ0f+J1vL._AC_SL1500_.jpg" class="post-image" alt="Cargador">
-                    </div>
-                    <div class="post-content">
-                        Cargador USB-C $120<br>
-                        nuevo, en caja<br>
-                        Lo entrego en la entrada del edificio
-                    </div>
-                </div>
-
-                <div class="post-footer">
-                    <div class="interaction-group">
-                        <button class="interaction-btn">
-                            <ion-icon name="chatbubble-outline"></ion-icon>
-                            <span>8</span>
-                        </button>
-                        <button class="interaction-btn" onclick="toggleLike(this)">
-                            <ion-icon name="heart-outline"></ion-icon>
-                            <span>4</span>
-                        </button>
-                    </div>
-                    <button class="share-btn"><ion-icon name="share-outline"></ion-icon></button>
-                </div>
-            </div>
-
-            <div class="post-card">
-                <div class="post-header">
-                    <div class="user-info">
-                        <span class="user-name">Sofia Martínez</span>
-                        <span class="user-location">Lab. Sistemas</span>
-                    </div>
-                    <div class="post-meta">
-                        <span>hace 1 h</span>
-                        <button class="btn-more"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
-                    </div>
-                </div>
-                
-                <div class="post-body">
-                    <div class="post-image-container" style="background-color: #fff;">
-                        <img src="https://m.media-amazon.com/images/I/71u9rN-2q+L._AC_SX679_.jpg" class="post-image" alt="Sabritas">
-                    </div>
-                    <div class="post-content">
-                        Sabritas grandes sabor limón $18 c/u — últimas 3 bolsas<br>
-                        Las llevo al lobby o subo si estás en piso bajo
-                    </div>
-                </div>
-
-                <div class="post-footer">
-                    <div class="interaction-group">
-                        <button class="interaction-btn">
-                            <ion-icon name="chatbubble-outline"></ion-icon>
-                            <span>8</span>
-                        </button>
-                        <button class="interaction-btn" onclick="toggleLike(this)">
-                            <ion-icon name="heart-outline"></ion-icon>
-                            <span>4</span>
-                        </button>
-                    </div>
-                    <button class="share-btn"><ion-icon name="share-outline"></ion-icon></button>
-                </div>
-            </div>
-
-            </div>
-
+        <div class="feed-grid" id="feed"></div>
     </div>
+</div>
+<div class="modal"><!--sin evento onclick para evitar errores logicos de esta modal en especial-->
+    <form id="formulario_solicitud_compra_ambu">
+        <fieldset>
+            <legend>Información para que el vendedor te ubique.</legend>
+            <section class="menuMap">
+                        <label for="control-Zoom">Zoom: </label>
+                        <input type="range" id="control-Zoom" name="control-Zoom" min="30" max="100" value="75" oninput="inZoom()">
+                        <div class="input-block inline">
+                            <label for="ubicacion" class="input-label inline">¿En que parte del Tec?</label>
+                            <select class="custom-select" id="ubicaciones" hidden></select>
+                            <select class="custom-select" id="ubicacionesCliente" name="id_ubicacion" required></select>
+                        </div>
+                </section>
+                <div id="visor-dron">
+                    <img class="mapa-render" id="mapa-principal" src="assets/renderItcaG.png" alt="Mapa Base" draggable="false">
+                    <img src="assets/vendedor.png" alt="vendedor" id="vendedor" class="estudent" style="display: block;">
+                    <div id="contentEtiqueta"></div>
+                    <div id="msj1" class="mssgMap">Mueve el mapa para cargar la información.</div>
+                    <div class="radar" id="radar"></div>
+                </div>
+            <input type="number" name="id_producto" id="productoSelect" hidden>
+            <label for="cantidad">Cantidad:</label>
+            <input type="number" name="cantidad" id="cantidadSelect" readonly value="1" min="1" max="12">
+            <section>
+            <input type="button" value="listo" id="rectificar-btn-ubicacion">
+            <input type="button" value="cancelar" id="cancelar-btn-ubicacion">
+            <a href="http://xampp.local/DigiCurva-App/web/login.html" target="_blank" id="iniciaSesion">Inicia sesion.</a>
+            </section>
+        </fieldset>
+    </form>
 </div>
     <script>
         // CONFIGURACIÓN
         const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
-
+        var names = [];
+        var xs = [];
+        var ys = [];
         // ESTADO GLOBAL
         let state = {
             productos: [],
@@ -401,12 +470,43 @@
                             image: item.imagen || MOCK_PHONE_IMG,
                             descripcion: item.descripcion || '',
                             ubicacion: item.ubicacion || 'nil',
-                            categoria: item.categoria || 'nil'
+                            categoria: item.categoria || 'nil',
+                            id_ubicacion : item.id_ubicacion
                         })) : [];
                         renderProductos();
                         console.log(state.productos);
                     }
                 } catch (e) { console.warn("Fallo productos", e.message); }
+
+                //C. UBICACION
+                try {
+                    const ubicacion = await fetch(`${API_BASE_URL}/consultar_ubicacion.php`);
+                    const ubicSelect = document.getElementById('ubicaciones');
+                    if(ubicacion.ok) {
+                        const data = await ubicacion.json();
+                        if(data.success) {
+                            data.ubicaciones.forEach(element => {
+                                const option = document.createElement('option');
+                                option.text = element.descripcion;
+                                option.value = element.id;
+                                names.push(element.descripcion);
+                                xs.push(element.x);
+                                ys.push(element.y);
+                                ubicSelect.appendChild(option);
+                                //------------para clientes
+                                const option2 = document.createElement('option');
+                                option2.text = element.descripcion;
+                                option2.value = element.id;
+                                ubicCliente.appendChild(option2);
+                            });
+                            console.log(data.ubicaciones);
+                            crearEtiquetas();
+                            vender(true);
+                            // Aplicamos el zoom inicial al cargar la página
+                            inZoom(); 
+                        }
+                    }
+                } catch (e) { console.warn("Fallo carga de ubicaciones", e); }
             } catch (error) {
                 console.error("Error general:", error);
             }
@@ -453,7 +553,7 @@
 
                 <div class="post-footer">
                     <div class="interaction-group">
-                        <button class="interaction-btn">
+                        <button class="interaction-btn" onclick="togglePedir(${producto.producto_id},${producto.id_ubicacion})">
                             <div id="order-check${producto.producto_id}" class="order-check">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                                 id="salvadorLottieOrder${producto.producto_id}">
@@ -489,6 +589,285 @@
                 icon.style.color = 'var(--text-gray)';
                 span.innerText = count - 1;
             }
+        }
+        async function togglePedir(id,id_ubicacion) {
+            try {LottieOCplayStp1(id);} catch (error) {}
+            const resultado = await modalVanerUbicaciones(id_ubicacion, id);
+            if (resultado) {
+                try {LottieOCplay(id)} catch (error) {}
+            } else {
+                try {LottieOCreload(id);} catch (error) {}
+            }
+        }
+        async function modalVanerUbicaciones(id_ubicacion, id_producto, nologueo = true) {
+            const modal = document.querySelector('.modal');
+            const productoSelect = document.getElementById('productoSelect');
+            productoSelect.value = id_producto;
+            selectUbic.value = id_ubicacion;
+            modal.style.display = 'flex';
+            if (nologueo) document.getElementById('iniciaSesion').style.display = 'none';
+            return new Promise((resolve,reject)=>{
+                document.getElementById('rectificar-btn-ubicacion').addEventListener('click', async ()=>{
+                    try {
+                        var datos = new FormData(document.getElementById('formulario_solicitud_compra_ambu'));
+                        var response = await fetch(`${API_BASE_URL}/generar_solicitud_compra_Ambu.php`,{
+                            method: 'POST',
+                            body: datos
+                        });
+                        if(response.ok) {
+                            const data = await response.json();
+                            console.log(data);
+                            if (data.success) {
+                                exitModal();
+                                resolve(true);
+                            } else {
+                                alert(data.error);
+                                console.log(data.error);
+                                if (data.tipe) {
+                                    document.getElementById('iniciaSesion').style.display = 'block';
+                                    exitModal(await modalVanerUbicaciones(id_ubicacion, id_producto, false));
+                                } else {
+                                    exitModal();
+                                    resolve(false);
+                                }
+                            }
+                        } else {
+                            exitModal();
+                            resolve(false);
+                        }
+                    } catch (error) {
+                        exitModal();
+                        resolve(false);
+                    }
+                })
+                document.getElementById('cancelar-btn-ubicacion').addEventListener('click', ()=>{
+                    exitModal();
+                    resolve(false);
+                })
+            });
+        }
+        function exitModal() {
+            const modal = document.querySelector('.modal');
+            modal.style.display = 'none';
+        }
+        //-----------------MAPA--------------------------------------
+        const mapa = document.getElementById('mapa-principal');
+        const visor = document.getElementById('visor-dron');
+        const radar = document.getElementById('radar');
+        const vendedor = document.getElementById('vendedor');
+        const selectUbic = document.getElementById('ubicaciones');
+        const ubicCliente = document.getElementById('ubicacionesCliente');
+        var arrastrando = false;
+        var iniciado = false;
+        var inicioX = 0, inicioY = 0;
+        var actualX = -557, actualY = -534;
+        var etiquetas = [];
+        var comprador = null;
+        var vendiendo = true;
+        function crearEtiquetas() {
+            const content = document.getElementById('contentEtiqueta');
+            for (let i = 0; i < names.length; i++) {
+                var element = document.createElement('div');
+                element.classList.add('etiqueta');
+                content.appendChild(element);
+                element.textContent = names[i];
+                displayObj(element,null,xs[i],ys[i]);
+                etiquetas.push(element);
+            }console.log(etiquetas);
+        }
+        function displayObj(obj, escala, x, y) {
+            const escalaActual = escala || document.getElementById('control-Zoom').value / 100;
+            const anchoConZoom = mapa.clientWidth * escalaActual;
+            const altoConZoom = mapa.clientHeight * escalaActual;
+            const _objPossx = x/100;
+            const _objPossy = y/100;
+            //console.log(_objPossx);
+            
+            let _x = anchoConZoom * _objPossx;
+            let _y = altoConZoom * _objPossy;
+            //console.log(mapa);
+            
+            obj.style.transform = `translate3d(${actualX+_x}px,${actualY+_y}px,0)`;
+        }
+        function moverCamara(escala, x, y) {
+            const escalaActual = escala || document.getElementById('control-Zoom').value / 100;
+            const anchoConZoom = mapa.clientWidth * escalaActual;
+            const altoConZoom = mapa.clientHeight * escalaActual;
+            const _objPossx = x/100;
+            const _objPossy = y/100;
+            //console.log(_objPossx);
+            
+            _x = anchoConZoom * _objPossx;
+            _y = altoConZoom * _objPossy;
+            let algo = 200*escalaActual;
+            iniciarArrastre(actualX,actualY);
+            moverArrastre(-_x+algo,-_y+algo);
+            terminarArrastre();
+        }
+        // --- FUNCIÓN DE ZOOM ---
+        function inZoom() {
+            const valorControl = document.getElementById('control-Zoom').value;
+            const escala = valorControl / 100; // 125 se convierte en 1.25
+            
+            if (iniciado) {
+                // Calculamos límites
+                const anchoConZoom = mapa.clientWidth * escala;
+                const altoConZoom = mapa.clientHeight * escala;
+    
+                const limiteX = visor.clientWidth - anchoConZoom;
+                const limiteY = visor.clientHeight - altoConZoom;
+    
+                if (anchoConZoom > visor.clientWidth) {
+                    actualX = Math.min(0, Math.max(actualX, limiteX));
+                } else {
+                    actualX = 0; 
+                }
+                if (altoConZoom > visor.clientHeight) {
+                    actualY = Math.min(0, Math.max(actualY, limiteY));
+                } else {
+                    actualY = 0; 
+                }
+            } else {
+                iniciado = true;
+            }
+            // Activamos tu transición suave para el zoom
+            for (let i = 0; i < etiquetas.length; i++) {
+                //en etiquetas
+                etiquetas[i].style.transition = 'transform 0.3s ease';
+                displayObj(etiquetas[i], escala, xs[i],ys[i]);
+            }
+            mapa.style.transition = 'transform 0.3s ease';
+            radar.style.transition = 'transform 0.3s ease';
+            vendedor.style.transition = 'transform 0.3s ease';
+            if (comprador) comprador.style.transition = 'transform 0.3s ease';
+            mapa.style.transform = `translate3d(${actualX}px, ${actualY}px, 0) scale(${escala})`;
+            displayObj(radar,escala,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            displayObj(vendedor,escala,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            if (comprador) displayObj(comprador,escala,xs[ubicCliente.value-1],ys[ubicCliente.value-1]);
+        }
+
+        // --- LÓGICA DE ARRASTRE ---
+        const iniciarArrastre = (clienteX, clienteY) => {
+            arrastrando = true;
+                
+            // TRUCO: Apagamos la transición al arrastrar para que el movimiento sea instantáneo y sin lag
+            mapa.style.transition = 'none'; 
+            radar.style.transition = 'none';
+            vendedor.style.transition = 'none';
+            if (comprador) comprador.style.transition = 'none';
+            for (let i = 0; i < etiquetas.length; i++) {
+                etiquetas[i].style.transition = 'none';
+            } 
+            inicioX = clienteX - actualX;
+            inicioY = clienteY - actualY;
+            document.body.style.cursor = 'grabbing';
+        };
+
+        const moverArrastre = (clienteX, clienteY) => {
+            if (!arrastrando) return;
+            document.getElementById('msj1').style.display = 'none';
+            let nuevaX = clienteX - inicioX;
+            let nuevaY = clienteY - inicioY;
+
+            // Obtenemos la escala actual del input
+            const escalaActual = document.getElementById('control-Zoom').value / 100;
+
+            // Calculamos límites
+            const anchoConZoom = mapa.clientWidth * escalaActual;
+            const altoConZoom = mapa.clientHeight * escalaActual;
+
+            const limiteX = visor.clientWidth - anchoConZoom;
+            const limiteY = visor.clientHeight - altoConZoom;
+
+            if (anchoConZoom > visor.clientWidth) {
+                nuevaX = Math.min(0, Math.max(nuevaX, limiteX));
+            } else {
+                nuevaX = 0; 
+            }
+
+            if (altoConZoom > visor.clientHeight) {
+                nuevaY = Math.min(0, Math.max(nuevaY, limiteY));
+            } else {
+                nuevaY = 0; 
+            }
+
+            actualX = nuevaX;
+            actualY = nuevaY;
+            //console.log(`(${actualX},${actualY})`);
+            
+            mapa.style.transform = `translate3d(${actualX}px, ${actualY}px, 0) scale(${escalaActual})`;
+            displayObj(radar,escalaActual,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            displayObj(vendedor,escalaActual,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            if (comprador) displayObj(comprador,escalaActual,xs[ubicCliente.value-1],ys[ubicCliente.value-1]);
+            for (let i = 0; i < etiquetas.length; i++) {
+                displayObj(etiquetas[i], escalaActual, xs[i],ys[i]);
+            }
+        };
+
+        const terminarArrastre = () => {
+            arrastrando = false;
+            document.body.style.cursor = 'default';
+        };
+
+        // Eventos de Ratón
+        visor.addEventListener('mousedown', (e) => iniciarArrastre(e.clientX, e.clientY));
+        window.addEventListener('mousemove', (e) => {
+            if(arrastrando) e.preventDefault();
+            moverArrastre(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', terminarArrastre);
+        window.addEventListener('mouseleave', terminarArrastre); // Suelta el mapa si el ratón sale del visor
+
+        // Eventos Táctiles (Móviles)
+        visor.addEventListener('touchstart', (e) => iniciarArrastre(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchmove', (e) => {
+            if(arrastrando) e.preventDefault();
+            moverArrastre(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+        window.addEventListener('touchend', terminarArrastre);
+        selectUbic.addEventListener('change',()=>{
+            moverCamara(null,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            displayObj(radar,null,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+            displayObj(vendedor,null,xs[selectUbic.value-1],ys[selectUbic.value-1]);
+        });
+        //---------propio de feed html -------------
+        ubicCliente.addEventListener('change',()=>{
+            moverCamara(null,xs[ubicCliente.value-1],ys[ubicCliente.value-1])
+            if(comprador){
+                displayObj(comprador,null,xs[ubicCliente.value-1],ys[ubicCliente.value-1]);
+                console.log('moviendo');
+                
+            }else{
+                createCompradores(ubicCliente.value);
+                console.log('creando');
+                
+            }
+        });
+        //------------------------------------------
+        function vender(valor) {//funcion no original, cambiada para feed html
+            vendiendo = valor;
+            if (valor) {
+                radar.style.display='block';
+            } else {
+                radar.style.display='none';
+            }
+        }
+        function createCompradores(optUbic) {//funcion no original, cambiada para feed html
+            comprador = document.createElement('div');
+            comprador.classList.add('estudents');
+            visor.appendChild(comprador);
+            comprador.innerHTML = `
+            <img src="./assets/estudiante.png" alt="vendedor" draggable="false">
+            <div class="numberStudent">Tú</div> 
+            `;
+            displayObj(comprador,null,xs[optUbic],ys[optUbic]);
+        }
+        let indiceComprador = 0;
+        function seguir(obj) {
+            indiceComprador += 1;
+            const optUbic = document.getElementById('ubicacionC');
+            createCompradores(optUbic.value);
+            obj.value = `Creado ${indiceComprador}, Crear otro.`;
         }
     </script>
 </body>
