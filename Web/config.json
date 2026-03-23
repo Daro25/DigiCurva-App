@@ -1,5 +1,5 @@
 {
     "use_Coints":true,
     "dominio":"http://xampp.local",
-    "api_url":"/DigiCurvaServer"
+    "base_url":"http://xampp.local/DigiCurvaServer/"
 }

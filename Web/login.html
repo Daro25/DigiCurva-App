@@ -291,6 +291,13 @@
     </div>
 
     <script>
+        async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = [];
         // Estado
         let secureTextEntry = true;
         let loading = false;
@@ -324,7 +331,8 @@
             setLoading(true);
 
             try {
-                const baseUrl = 'http://xampp.local/DigiCurvaServer/login.php';
+                configures = await cargarConfiguracion();
+                const baseUrl = configures.base_url + 'login.php';
                 //'https://ljusstudie.site/DigiCurvaServer/login.php';
 
                 // 1. Construcción de FormData

@@ -415,6 +415,13 @@
     </main>
 
     <script>
+        async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = [];
         const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
         const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
         var names = [];
@@ -423,6 +430,8 @@
         var isUpdate = false;
         iniciar();
         async function iniciar() {
+            configures = await cargarConfiguracion();
+            API_BASE_URL = configures.base_url || API_BASE_URL;
             try {
                     const categorias = await fetch(`${API_BASE_URL}/consultar_categorias.php`);
                     const cateSelect = document.getElementById('categoria');

@@ -152,7 +152,14 @@
         </section>
     </form>
 <script>
-    const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+    async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = await cargarConfiguracion();
+    var API_BASE_URL = configures.base_url || 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
     function increaseCount() {
         const countInput = document.getElementById('product-count');
         const max = parseInt(countInput.max);

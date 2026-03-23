@@ -234,8 +234,15 @@
 
     <script>
         // --- CONSTANTES ---
+        async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = await cargarConfiguracion();
         const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';//'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
-        const URL_CREAR_ANUNCIO = 'http://xampp.local/DigiCurvaServer/publicar_anuncio.php'//'https://ljusstudie.site/DigiCurvaServer/publicar_anuncio.php';
+        const URL_CREAR_ANUNCIO = configures.base_url + '/publicar_anuncio.php'//'https://ljusstudie.site/DigiCurvaServer/publicar_anuncio.php';
         const URL_PROCESAR_PAGO = 'https://ljusstudie.site/paypal/crear_link_paypal.php';
 
         // --- ESTADO GLOBAL ---

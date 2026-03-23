@@ -366,6 +366,14 @@
     </div>
 
     <script>
+    async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = [];
+
         // ESTADO GLOBAL
         let photoFile = null;
         let photoUrlUploaded = ""; // URL final después de subir a PHP
@@ -464,8 +472,9 @@
 
             // D. Registro (Petición GET/Query Params como en tu código original)
             try {
+                configures = await cargarConfiguracion();
                 // Construcción de la URL
-                const baseUrl = 'http://xampp.local/DigiCurvaServer/registro.php';//'https://ljusstudie.site/DigiCurvaServer/registro.php';
+                const baseUrl = configures.baseUrl + 'registro.php';//'https://ljusstudie.site/DigiCurvaServer/registro.php';
                 // Construcción del objeto de datos
                 const datosRegistro = {
                     nombre: formData.nombres,

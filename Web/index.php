@@ -438,7 +438,14 @@ if(!isset($_COOKIE['token'])){
 
     <script>
         // CONFIGURACIÓN
-        const API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = [];
+        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
 
@@ -458,6 +465,8 @@ if(!isset($_COOKIE['token'])){
         });
 
         async function initApp() {
+                configures = await cargarConfiguracion();
+                API_BASE_URL = configures.base_url || API_BASE_URL;
             // Esperar 2 segundos (Lógica visual solicitada)
             await new Promise(resolve => setTimeout(resolve, 2000));
             // Cargar datos
