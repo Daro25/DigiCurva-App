@@ -785,10 +785,10 @@
 
         // --- 2. FETCH DE DATOS ---
         async function fetchRemoteData(userId) {
-            try {
-                var idUser = 0;
                 configures = await cargarConfiguracion();
                 API_BASE_URL = configures.base_url || API_BASE_URL;
+            try {
+                var idUser = 0;
                 // A. PERFIL
                 try {
                     const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`);
