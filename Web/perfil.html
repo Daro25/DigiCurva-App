@@ -246,13 +246,19 @@
             box-shadow: var(--card-shadow);
             border: 1px solid #eee;
             transition: transform 0.2s;
+            position: relative;
         }
         .product-card:hover { transform: translateY(-3px); }
         .prod-img { width: 100%; height: 160px; object-fit: contain; margin-bottom: 10px; }
         .prod-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.2; }
         .prod-condition { font-size: 12px; color: var(--text-gray); margin-bottom: 5px; }
         .prod-price { font-size: 24px; font-weight: 300; color: #333; }
-
+        .product-card>input{
+            display: none;
+        }
+        .product-card:hover>input{
+            display: block;
+        }
         /* Botón Añadir (Big Plus) */
         .add-card-btn {
             background: #f0f0f0;
@@ -586,6 +592,7 @@
                     <button onclick="subscribeUser()" class="btn-subscribe">🔔 suscribete</button>
                     <label for="control-Zoom">Zoom: </label>
                     <input type="range" id="control-Zoom" name="control-Zoom" min="50" max="100" value="75" oninput="inZoom()">
+                    <select class="custom-select" id="ubicaciones" name="id_ubicacion" hidden></select>
                 </section>
                  <div id="visor-dron">
                     <img class="mapa-render" id="mapa-principal" src="assets/renderItcaG.png" alt="Mapa Base" draggable="false">
@@ -644,7 +651,9 @@
                     <button class="btn-grey">obtener Saldo</button>
                 </div>
             </div>
-
+            <div class="side-card">
+                <div class="feed-grid" id="feed"></div>
+            </div>
             <div class="side-card">
                 <div class="about-header">
                     <span class="saldo-title">Acerca De Mi</span>
@@ -666,7 +675,6 @@
                     </div>
                 </div>
             </div>
-            <div class="feed-grid" id="feed"></div>
             <span class="review-title">Reseñas Del Vendedor</span>
             
             <div class="side-card" style="border: none; background-color: #f9f9f9; box-shadow: none;">
@@ -896,6 +904,29 @@
                         renderBanners();
                     }
                 } catch (e) { console.warn("Fallo banners", e); }
+                //C2. Ubicaciones
+                try {
+                    const ubicacion = await fetch(`${API_BASE_URL}/consultar_ubicacion.php`);
+                    const ubicSelect = document.getElementById('ubicaciones');
+                    if(ubicacion.ok) {
+                        const data = await ubicacion.json();
+                        if(data.success) {
+                            data.ubicaciones.forEach(element => {
+                                const option = document.createElement('option');
+                                option.text = element.descripcion;
+                                option.value = element.id;
+                                names.push(element.descripcion);
+                                xs.push(element.x);
+                                ys.push(element.y);
+                                ubicSelect.appendChild(option);
+                            });
+                            console.log(data.ubicaciones);
+                            crearEtiquetas();
+                            // Aplicamos el zoom inicial al cargar la página
+                            inZoom(); 
+                        }
+                    }
+                } catch (e) { console.warn("Fallo carga de ubicaciones", e); }
                 //D. Pedidos
                 try {
                     let formData = new FormData();
@@ -906,6 +937,10 @@
                     });
                     if(resSolicitud.ok) {
                         const data = await resSolicitud.json();
+                        if (!data.success) {
+                            console.log(data.error);
+                            return;
+                        }
                         state.pedidos = Array.isArray(data.solicitudes) ? data.solicitudes.map(item => ({
                             id: item.solicitud_id,
                             imagen: item.imagen,
@@ -916,7 +951,12 @@
                             nombre: item.nombre,
                             cantidad: item.cantidad
                         })) : [];
+                        data.solicitudes.forEach(solicitud => {
+                            createCompradores(solicitud.id_ubicacion-1);
+                        });
                         renderSolicitud();
+                        vender((data.activo && data.activo === 1));
+                        console.log(state.pedidos);
                     }
                 } catch (e) { console.warn("Fallo pedidos", e); }
             } catch (error) {
@@ -944,7 +984,7 @@
         function renderBanners() {
             const track = document.getElementById('carousel-track');
             if (state.banners.length === 0) {
-                document.getElementById('banner-section').style.display = 'none';
+                //track.track.innerHTML = '<span>Sin anuncios por ahora.</span>';
                 return;
             }
 
@@ -1010,8 +1050,7 @@
                         <span class="user-location">${pedidos.ubicacion}</span>
                     </div>
                     <div class="post-meta">
-                        <span>${pedidos.fecha_solicitud}</span>
-                        <button class="btn-more"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
+                        <span>${pedidos.fecha_solicitud}</span>                    
                     </div>
                 </div>
                 
@@ -1029,7 +1068,6 @@
                         <button onclick="cancelarP(${pedidos.id})">cancelar</button>
                         <button onclick="atendidoP(${pedidos.id})">Ya lo atendí.</button>
                     </div>
-                    <button class="share-btn"><ion-icon name="share-outline"></ion-icon></button>
                 </div>
             </div>
             `).join('');
@@ -1129,9 +1167,9 @@
         let etiquetas = [];
         let compradores = [];
         let vendiendo = false;
-        const names = ['F','G','H','E','L COMPUTO','L CIVIL','EXTRAESCOLARES','L INDUSTRIAL','L ELECTRO','GIMANASIO', 'COMEDOR', 'BIBLIOTECA', 'PSICOLOGIA'];
-        const xs = [59,61,62,56,13,75,73,73,73,36,32,40,40];
-        const ys = [54,67,80,42,60,72,65,46,29,88,66,53,72];
+        const names = [];
+        const xs = [];
+        const ys = [];
         function crearEtiquetas() {
             const content = document.getElementById('contentEtiqueta');
             for (let i = 0; i < names.length; i++) {
@@ -1207,12 +1245,6 @@
             displayObj(radar,escala,xs[selectUbic.value],ys[selectUbic.value]);
             displayObj(vendedor,escala,xs[selectUbic.value],ys[selectUbic.value]);
         }
-
-        // Aplicamos el zoom inicial al cargar la página
-        crearEtiquetas();
-        inZoom();
-        //simulacion 
-        vender(true);
 
         // --- LÓGICA DE ARRASTRE ---
         const iniciarArrastre = (clienteX, clienteY) => {
@@ -1328,7 +1360,7 @@
                 comprador = document.createElement('img');
                 comprador.classList.add('estudent');
                 visor.appendChild(comprador);
-                comprador.src = './estudiante.png';
+                comprador.src = './assets/estudiante.png';
                 comprador.draggable = false;
             }else{
                 visor.removeChild(compradores[optUbic].element);
@@ -1336,7 +1368,7 @@
                 comprador.classList.add('estudents');
                 visor.appendChild(comprador);
                 comprador.innerHTML = `
-                <img src="./estudiantes.png" alt="vendedor" draggable="false">
+                <img src="./assets/estudiantes.png" alt="vendedor" draggable="false">
                 <div class="numberStudent">${compradores[optUbic].n}</div> 
                 `;
             }

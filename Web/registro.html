@@ -289,10 +289,14 @@
                                     <label class="label">Nombre(s)</label>
                                     <input type="text" id="nombres" class="input">
                                 </div>
-                                <div class="input-group">
-                                    <label class="label">Apellido(s)</label>
-                                    <input type="text" id="apellidos" class="input">
-                                </div>
+                                    <div class="input-group">
+                                        <label class="label">Apellido Paterno</label>
+                                        <input type="text" id="apellidoP" class="input" maxlength="30">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="label">Apellido Materno</label>
+                                        <input type="text" id="apellidoM" class="input" maxlength="30">
+                                    </div>
                                 <div class="input-group">
                                     <label class="label">Correo electrónico</label>
                                     <input type="email" id="email" class="input">
@@ -434,7 +438,8 @@
             // A. Recolectar datos
             const formData = {
                 nombres: document.getElementById('nombres').value,
-                apellidos: document.getElementById('apellidos').value,
+                apellidoP: document.getElementById('apellidoP').value,
+                apellidoM: document.getElementById('apellidoM').value,
                 email: document.getElementById('email').value,
                 telefono: document.getElementById('telefono').value,
                 calle: document.getElementById('calle').value,
@@ -463,7 +468,9 @@
                 const baseUrl = 'http://xampp.local/DigiCurvaServer/registro.php';//'https://ljusstudie.site/DigiCurvaServer/registro.php';
                 // Construcción del objeto de datos
                 const datosRegistro = {
-                    nombre: formData.nombres + ' ' + formData.apellidos,
+                    nombre: formData.nombres,
+                    apP: formData.apellidoP,
+                    apM: formData.apellidoM,
                     correo: formData.email,
                     contrasena_hash: formData.contrasena,
                     telefono: formData.telefono,
