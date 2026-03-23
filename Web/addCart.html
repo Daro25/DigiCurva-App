@@ -159,7 +159,7 @@
     }
 
     var configures = await cargarConfiguracion();
-    var API_BASE_URL = configures.base_url || 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+    var API_BASE_URL = configures.base_url || 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
     function increaseCount() {
         const countInput = document.getElementById('product-count');
         const max = parseInt(countInput.max);
@@ -249,7 +249,7 @@
         async function addToCart() {
             const formData = new FormData(document.getElementById('app-container'));
             try {
-            const response = await fetch(API_BASE_URL + "/agregarCarrito.php", {
+            const response = await fetch(API_BASE_URL + "agregarCarrito.php", {
                 method: "POST",
                 body: formData
             });

@@ -427,7 +427,7 @@
     }
 
     var configures = [];
-        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
         var names = [];
@@ -465,7 +465,7 @@
             try {
                 // A. PERFIL
                 try {
-                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`);
+                    const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`);
                     if(resPerfil.ok) {
                         const data = await resPerfil.json();
                         state.userProfile = {
@@ -488,7 +488,7 @@
 
                 // B. PRODUCTOS
                 try {
-                    const resProd = await fetch(`${API_BASE_URL}/obtener_feed.php`);
+                    const resProd = await fetch(`${API_BASE_URL}obtener_feed.php`);
                     if(resProd.ok) {
                         const data = await resProd.json();
                         // Mapeo
@@ -510,7 +510,7 @@
 
                 //C. UBICACION
                 try {
-                    const ubicacion = await fetch(`${API_BASE_URL}/consultar_ubicacion.php`);
+                    const ubicacion = await fetch(`${API_BASE_URL}consultar_ubicacion.php`);
                     const ubicSelect = document.getElementById('ubicaciones');
                     if(ubicacion.ok) {
                         const data = await ubicacion.json();
@@ -683,7 +683,7 @@
                 document.getElementById('rectificar-btn-ubicacion').addEventListener('click', async ()=>{
                     try {
                         var datos = new FormData(document.getElementById('formulario_solicitud_compra_ambu'));
-                        var response = await fetch(`${API_BASE_URL}/generar_solicitud_compra_Ambu.php`,{
+                        var response = await fetch(`${API_BASE_URL}generar_solicitud_compra_Ambu.php`,{
                             method: 'POST',
                             body: datos
                         });

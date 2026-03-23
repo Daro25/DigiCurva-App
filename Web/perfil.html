@@ -791,7 +791,7 @@
                 API_BASE_URL = configures.base_url || API_BASE_URL;
                 // A. PERFIL
                 try {
-                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`);
+                    const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`);
                     if(resPerfil.ok) {
                         const data = await resPerfil.json();
                         if (!data.success) {

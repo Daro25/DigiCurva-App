@@ -301,15 +301,16 @@
     }
 
     var configures = [];
-        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
-        const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
+        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
+        var URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
         var isUpdate = false;
         iniciar();
         async function iniciar() {
             configures = await cargarConfiguracion();
                 API_BASE_URL = configures.base_url || API_BASE_URL;
+                URL_SUBIR_IMAGEN = configures.dominio + '/subirDrive' || URL_SUBIR_IMAGEN;
             try {
-                    const categorias = await fetch(`${API_BASE_URL}/consultar_categorias.php`);
+                    const categorias = await fetch(`${API_BASE_URL}consultar_categorias.php`);
                     const cateSelect = document.getElementById('categoria');
                     if(categorias.ok) {
                         const data = await categorias.json();
@@ -371,7 +372,7 @@
                 } else {
                     action_php = 'crear_producto.php';
                 }
-                var response = await fetch(`${API_BASE_URL}/${action_php}`,{
+                var response = await fetch(`${API_BASE_URL}${action_php}`,{
                     method: 'POST',
                     body: datos
                 });

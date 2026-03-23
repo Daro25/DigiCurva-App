@@ -247,7 +247,7 @@
     }
 
     var configures = [];
-        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
         const MOCK_CART_ITEMS = [
@@ -290,7 +290,7 @@
             try {
                 // A. PERFIL
                 try {
-                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`);
+                    const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`);
                     if(resPerfil.ok) {
                         const data = await resPerfil.json();
                         userProfile = {
@@ -303,7 +303,7 @@
 
                 // B. PRODUCTOS
                 try {
-                    const resProd = await fetch(`${API_BASE_URL}/obtener_carrito.php`);
+                    const resProd = await fetch(`${API_BASE_URL}obtener_carrito.php`);
                     if(resProd.ok) {
                         const data = await resProd.json();
                         // Mapeo

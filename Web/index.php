@@ -445,7 +445,7 @@ if(!isset($_COOKIE['token'])){
     }
 
     var configures = [];
-        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
 
@@ -487,7 +487,7 @@ if(!isset($_COOKIE['token'])){
             try {
                 // A. PERFIL
                 try {
-                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`);
+                    const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`);
                     if(resPerfil.ok) {
                         const data = await resPerfil.json();
                         if(!data.success) {
@@ -505,7 +505,7 @@ if(!isset($_COOKIE['token'])){
 
                 // B. PRODUCTOS
                 try {
-                    const resProd = await fetch(`${API_BASE_URL}/Listar_productos.php`);
+                    const resProd = await fetch(`${API_BASE_URL}Listar_productos.php`);
                     if(resProd.ok) {
                         const data = await resProd.json();
                         // Mapeo
@@ -522,7 +522,7 @@ if(!isset($_COOKIE['token'])){
                 } catch (e) { console.warn("Fallo productos", e.message); }
                 // B2. Ofertas
                 try {
-                    const resProd = await fetch(`${API_BASE_URL}/obtener_Ofertas.php`);
+                    const resProd = await fetch(`${API_BASE_URL}obtener_Ofertas.php`);
                     if(resProd.ok) {
                         const data = await resProd.json();
                         // Mapeo
@@ -541,7 +541,7 @@ if(!isset($_COOKIE['token'])){
                 } catch (e) { console.warn("Fallo productos", e.message); }
                 // C. BANNERS
                 try {
-                    const resBanners = await fetch(`${API_BASE_URL}/obtener_anuncios.php`);
+                    const resBanners = await fetch(`${API_BASE_URL}obtener_anuncios.php`);
                     if(resBanners.ok) {
                         const data = await resBanners.json();
                         state.banners = Array.isArray(data.anuncios_activos) ? data.anuncios_activos.map(item => ({

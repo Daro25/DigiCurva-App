@@ -241,8 +241,8 @@
     }
 
     var configures = await cargarConfiguracion();
-        const URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';//'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
-        const URL_CREAR_ANUNCIO = configures.base_url + '/publicar_anuncio.php'//'https://ljusstudie.site/DigiCurvaServer/publicar_anuncio.php';
+        const URL_SUBIR_IMAGEN = configures.dominio + '/subirDrive';//'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
+        const URL_CREAR_ANUNCIO = configures.base_url + 'publicar_anuncio.php'//'https://ljusstudie.site/DigiCurvaServer/publicar_anuncio.php';
         const URL_PROCESAR_PAGO = 'https://ljusstudie.site/paypal/crear_link_paypal.php';
 
         // --- ESTADO GLOBAL ---

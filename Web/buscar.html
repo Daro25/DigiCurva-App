@@ -438,7 +438,7 @@ async function cargarConfiguracion() {
     }
 
     var configures = [];
-        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
 
@@ -490,7 +490,7 @@ async function cargarConfiguracion() {
                     const data = {
                         usuario_id: userId
                     }
-                    const resPerfil = await fetch(`${API_BASE_URL}/obtener_perfil.php`, {
+                    const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
@@ -509,7 +509,7 @@ async function cargarConfiguracion() {
                 try {
                     let formData = new FormData();
                     formData.append('search', search);
-                    const resProd = await fetch(`${API_BASE_URL}/search.php`,{
+                    const resProd = await fetch(`${API_BASE_URL}search.php`,{
                         method: 'POST',
                         body: formData
                     });
