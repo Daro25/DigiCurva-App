@@ -120,6 +120,15 @@
             overflow: hidden;
             display: flex; justify-content: center; align-items: center;
         }
+        .post-image-container2 {
+            width: 70px;
+            height: 70px;
+            flex-shrink: 0;
+            background-color: #f5ece2; /* Fondo beige de la nutella */
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
         .post-image {
             width: 100%; height: 100%; object-fit: contain; padding: 5px;
         }
@@ -363,7 +372,7 @@
                     <ion-icon name="heart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
                     <ion-icon name="cart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
                     <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar" alt="User" di="user-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar" alt="User" id="user-avatar">
                         <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
                             <span style="font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);" id="user-name">Naomi Ruiz</span>
                         </div>
@@ -373,7 +382,9 @@
         </div>
     </div>
     <div class="main-container">
-        <div class="feed-grid" id="feed"></div>
+        <div class="feed-grid" id="feed"></div><br>
+        <h2>Solicitudes</h2>
+        <div class="feed-grid" id="feed2"></div>
     </div>
 </div>
 <div class="modal"><!--sin evento onclick para evitar errores logicos de esta modal en especial-->
@@ -418,6 +429,7 @@
         // ESTADO GLOBAL
         let state = {
             productos: [],
+            solicitudes : [],
             userProfile: null,
             loading: true,
             bannerIndex: 0
@@ -451,7 +463,17 @@
                             nombre: data.perfil?.nombre || 'Usuario',
                             avatar: data.perfil?.foto_perfil_url || DEFAULT_AVATAR
                         };
+                        state.solicitudes =  Array.isArray(data.solicitudes) ? data.solicitudes.map(item => ({
+                            fecha : item.fecha_solicitud,
+                            title : item.nombre,
+                            status: item.statusd,
+                            imagen: item.imagen,
+                            cantidad: item.cantidad
+                        })) : [];
+                        console.log(state.solicitudes);
                         updateHeaderUI();
+                        renderSolicitudes();
+                        
                     }
                 } catch (e) { console.warn("Fallo perfil", e); }
 
@@ -570,6 +592,49 @@
                     </div>
                     <button class="share-btn"><ion-icon name="share-outline"></ion-icon></button>
                 </div>
+            </div>
+            `).join('');
+        }
+        function renderSolicitudes() {
+            const track = document.getElementById('feed2');
+            if (state.solicitudes.length === 0) {
+                track.innerHTML = '<span>Lo sentimos, no hay solicitudes por ahora.</span>'
+                return;
+            }
+
+            track.innerHTML = state.solicitudes.map(solicitud => `
+                <div class="post-card">
+                <div class="post-header">
+                    <div class="user-info">
+                        <span class="user-name">${solicitud.title}</span>
+                    </div>
+                    <div class="post-meta">
+                        <span>${solicitud.fecha}</span>
+                    </div>
+                </div>
+                
+                <div class="post-body">
+                    <div class="post-content">
+                        Estado: ${solicitud.status} <br>
+                        Cantidad: ${solicitud.cantidad}
+                    </div>
+                    <div class="post-image-container2" style="background-color: #fff;">
+                        <img src="${solicitud.imagen}" class="post-image" alt="${solicitud.title}">
+                    </div>
+                </div>
+
+                <!--div class="post-footer">
+                    <div class="interaction-group">
+                        <button class="interaction-btn">
+                            dddddd
+                        </button>
+                        <button class="interaction-btn" onclick="toggleLike(this)">
+                            <ion-icon name="heart-outline"></ion-icon>
+                            <span>4</span>
+                        </button>
+                    </div>
+                    <button class="share-btn"><ion-icon name="share-outline"></ion-icon></button>
+                </div-->
             </div>
             `).join('');
         }

@@ -531,6 +531,7 @@
             }
         });
         async function uploadImage() {
+            if (isUpdate) return document.getElementById('url_ok_imagen').value;
             console.log("--- PASO 1: SUBIR FOTO ---");
 
             // Generar nombre
