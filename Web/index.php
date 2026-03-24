@@ -142,7 +142,7 @@ if(!isset($_COOKIE['token'])){
             border-radius: 4px;
             height: 36px;
             margin: 0 20px;
-            max-width: 400px;
+            max-width: 300px;
             padding: 0 10px;
             border: 1px solid #ccc;
         }
@@ -349,8 +349,7 @@ if(!isset($_COOKIE['token'])){
                         </div>
                         <div class="spacer"></div>
                         <div class="user-info">
-                            <a href="./perfil.html">
-                            <img id="user-avatar" src="" class="avatar"></a>
+                            <img id="user-avatar" src="" class="avatar" onclick="window.location.href='./perfil.html'" alt="Avatar">
                             <div class="user-details">
                                 <span class="user-name"><a id="user-name" href="./perfil.html">Usuario</a></span>
                                 <span class="user-link">Ajustes</span>
