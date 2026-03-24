@@ -101,6 +101,9 @@ if(!isset($_COOKIE['token'])){
             display: flex;
             align-items: center;
         }
+        .user-info>a{
+            text-decoration: none;
+        }
         .avatar {
             width: 32px; height: 32px;
             border-radius: 50%;
@@ -346,7 +349,8 @@ if(!isset($_COOKIE['token'])){
                         </div>
                         <div class="spacer"></div>
                         <div class="user-info">
-                            <img id="user-avatar" src="" class="avatar">
+                            <a href="./perfil.html">
+                            <img id="user-avatar" src="" class="avatar"></a>
                             <div class="user-details">
                                 <span class="user-name"><a id="user-name" href="./perfil.html">Usuario</a></span>
                                 <span class="user-link">Ajustes</span>
