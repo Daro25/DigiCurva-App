@@ -1,0 +1,1417 @@
+<?php
+// 1. Cargamos la configuración y conexión (donde se define VAPID_PUBLIC)
+require_once '../../Implementacion-notificaciones-push/db.php';
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- RESET Y VARIABLES --- */
+        :root {
+            --primary-blue: #2196F3;
+            --bg-color: #f5f7fa;
+            --text-dark: #333;
+            --text-gray: #666;
+            --border-radius: 12px;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --max-width: 1280px;
+            --header-bg-color: rgba(56, 189, 248, 0.4); /* Overlay azul translúcido */
+        }
+
+        /* --- PANTALLA DE CARGA --- */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .hero-card {
+            width: 450px; /* Ocupa todo el contenedor */
+            height: 250px;
+            position: relative;
+            background-color: #eee;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 40px; right: 40px;
+            text-align: right;
+        }
+
+        .hero-title {
+            font-size: 32px; color: #fff; font-weight: bold;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+        }
+        .hero-subtitle {
+            font-size: 24px; color: #eee;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+        }
+        /* --- HEADER CORREGIDO --- */
+        .header-background {
+            background-image: url('assets/fondoHome.jpg'); /* Tu imagen de fondo */
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 20px; /* Separación con el contenido */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-container {
+            background-color: var(--header-bg-color);
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .header-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .logo { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        
+        .logo-text {
+            font-weight: 900; 
+            font-size: 24px; 
+            color: #fff; /* Texto blanco sobre fondo imagen */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .nav-menu { 
+            display: flex; 
+            gap: 20px; 
+            font-size: 14px; 
+            font-weight: 500; 
+            color: #fff; /* Enlaces en blanco */
+        }
+        
+        .nav-menu span {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .search-bar { 
+            display: flex; 
+            align-items: center; 
+            background: #fff; /* Input blanco para contraste */
+            border-radius: 4px; 
+            padding: 5px 10px; 
+            width: 300px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .search-bar input { 
+            border: none; 
+            outline: none; 
+            flex: 1; 
+            font-size: 14px; 
+            background: transparent;
+        }
+
+        .user-menu { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            font-size: 14px; 
+            color: #fff; /* Iconos y texto en blanco */
+        }
+        
+        .user-mini-avatar { 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 2px solid #fff; /* Borde para resaltar sobre fondo */
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-dark); padding-bottom: 50px; }
+
+        /* --- HEADER (Reutilizado Simplificado) --- */
+        .header { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 10px 0; margin-bottom: 20px; }
+        .header-content { max-width: var(--max-width); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .logo { font-weight: 900; font-size: 24px; color: var(--primary-blue); display: flex; align-items: center; gap: 5px; }
+        .nav-menu { display: flex; gap: 20px; font-size: 14px; font-weight: 500; }
+        .search-bar { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; padding: 5px 10px; width: 300px; }
+        .search-bar input { border: none; outline: none; flex: 1; font-size: 14px; }
+        .user-menu { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .user-mini-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2.2fr 1fr; /* Proporción visual de la imagen */
+            gap: 25px;
+        }
+
+        /* --- COLUMNA IZQUIERDA --- */
+        
+        /* Banner Perfil */
+        .profile-header-card {
+            background: #fff;
+            border-radius: var(--border-radius);
+            /*overflow: hidden;*/
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .banner-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            /* Simulación del patrón Low Poly Azul */
+            background: linear-gradient(135deg, #2196F3 25%, #4facfe 50%, #00f2fe 75%);
+            background-image: url('https://img.freepik.com/free-vector/blue-geometric-polygonal-background_1035-19565.jpg'); /* Placeholder similar */
+        }
+        .profile-info-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 30px;
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+        }
+        .big-avatar {
+            width: 140px;
+            height: 140px;
+            z-index: 1;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            object-fit: cover;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: -50px; /* Efecto de salirse del banner si fuera necesario, aqui está dentro */
+            transform: translateY(25%); /* Ajuste visual para que cruce la línea */
+        }
+        .profile-name-overlay {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 15px; /* Ajuste para alinear con el avatar */
+        }
+
+        /* Secciones de Productos */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 60px 0 20px 0; /* Margen superior amplio por el avatar overlap */
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        /* Tarjeta de Producto */
+        .product-card {
+            background: #fff;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #eee;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        .product-card:hover { transform: translateY(-3px); }
+        .prod-img { width: 100%; height: 160px; object-fit: contain; margin-bottom: 10px; }
+        .prod-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; line-height: 1.2; }
+        .prod-condition { font-size: 12px; color: var(--text-gray); margin-bottom: 5px; }
+        .prod-price { font-size: 24px; font-weight: 300; color: #333; }
+        .product-card>input{
+            display: none;
+        }
+        .product-card:hover>input{
+            display: block;
+        }
+        /* Botón Añadir (Big Plus) */
+        .add-card-btn {
+            background: #f0f0f0;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            min-height: 250px; /* Altura similar a la card */
+            border: 2px dashed #ccc;
+            transition: background 0.2s;
+        }
+        .add-card-btn:hover { background: #e0e0e0; border-color: #bbb; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background: #fff;
+            border-radius: var(--border-radius);
+            color: var(--text-gray);
+        }
+        .btn-grey {
+            background: #e0e0e0; color: #333; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; font-weight: 500;
+        }
+
+        /* --- COLUMNA DERECHA (SIDEBAR) --- */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; margin-top: 30px;} /* Ajuste para alinear con el contenido de la izquierda */
+
+        .side-card {
+            background: #fff;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #e5e5e5;
+        }
+
+        /* Saldo */
+        .saldo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .saldo-title { font-weight: 700; font-size: 18px; }
+        .link-blue { color: var(--primary-blue); font-size: 12px; text-decoration: none; font-weight: 500; cursor: pointer; }
+        .saldo-amount { font-size: 32px; font-weight: 400; color: #000; margin: 10px 0 5px 0; }
+        .saldo-sub { font-size: 14px; color: var(--text-gray); display: flex; align-items: center; justify-content: space-between; }
+        .plan-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .plan-badge { font-weight: 700; font-size: 14px; }
+
+        /* Acerca de Mi */
+        .about-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .about-text { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 20px; text-align: justify; }
+        
+        .contact-list { display: flex; flex-direction: column; gap: 10px; }
+        .contact-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #333; }
+        .contact-icon { font-size: 20px; }
+
+        /* Reseñas */
+        .review-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: block; }
+        .review-item { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .review-avatar { width: 30px; height: 30px; background: #ff9da7; border-radius: 50%; } /* Color similar a la img */
+        .review-name { font-weight: 700; font-size: 14px; }
+        .stars { color: #fbc02d; font-size: 14px; }
+        .review-badge { font-size: 12px; font-weight: 700; margin: 5px 0; display: block; }
+        .review-text { font-size: 12px; color: #666; line-height: 1.4; }
+
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+            .sidebar { margin-top: 0; }
+            .big-avatar { width: 100px; height: 100px; transform: translateY(30%); }
+            .profile-name-overlay { font-size: 22px; }
+            .section-title { margin-top: 50px; }
+        }
+
+
+        #visor-dron {
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 12px;
+            background-color: #000;
+            border: 2px solid #333;
+        }
+
+        /* 2. LA IMAGEN PRINCIPAL */
+        .mapa-render {
+            position: absolute;
+            top: 0; left: 0;
+            width: auto;
+            height: 400%; /* El tamaño masivo para dar profundidad */
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transform-origin: top left;
+            will-change: transform;
+            /* El efecto que pediste (se controla desde JS para no dar lag al arrastrar) */
+            transition: transform 1s ease; 
+        }
+        .estudent{
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 4;
+            width: 40px; height: auto;
+            user-select: none;
+            touch-action: none;
+            display: none;
+        }
+        .estudents>img{
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            z-index: 4;
+            width: 40px; height: auto;
+            user-select: none;
+            touch-action: none;
+        }
+        .estudents{
+            position: absolute;
+            z-index: 5;
+            display: none;
+            width: 40px;
+            height: 40px;
+        }
+        .mapa-render:active {
+            cursor: grabbing;
+        }
+        .mssgMap{
+            color: #e4e3e3;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            cursor: grabbing;
+            user-select: none;
+            touch-action: none;
+            transform-origin: top left;
+            z-index: 80;
+        }
+        .etiqueta{
+            position: absolute;
+            color: cyan;
+            font-weight: bolder;
+            letter-spacing: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            background-color: #333333cb;
+            display: inline-block;
+            z-index: 1;
+            user-select: none;
+            touch-action: none;
+        }
+        .numberStudent{
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            color: white;
+            font-weight: bolder;
+            letter-spacing: 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            background-color: #333333cb;
+            display: inline-block;
+            z-index: 1;
+            user-select: none;
+            touch-action: none;
+            border-radius: 50%;
+            padding: 2px;
+        }
+        .radar{
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            position: absolute;
+            animation: radar 2s infinite;
+            z-index: 3;
+            display: none;
+        }
+        .radar::before{
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transition: translate(-50%,-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #fff;
+        }
+        @keyframes radar {
+            0%{
+                box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.5);
+            }
+            100%{
+                box-shadow: 0 0 0 200px rgba(0, 255, 255, 0.1);
+            }
+        }
+    /*-------------notificaciones----------------*/
+    .feed-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    /* --- TARJETA DE POST (Muro) --- */
+        .post-card {
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Cabecera del Post (Usuario, Ubicación, Tiempo) */
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 700; font-size: 15px; color: #000; }
+        .user-location { font-size: 13px; font-weight: 700; color: #000; margin-top: 2px; }
+        
+        .post-meta { display: flex; align-items: center; gap: 10px; color: var(--text-gray); font-size: 13px; }
+        .btn-more { background: none; border: none; font-size: 20px; color: var(--text-gray); cursor: pointer; }
+
+        /* Cuerpo del Post (Imagen y Texto) */
+        .post-body {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .post-image-container {
+            width: 130px;
+            height: 130px;
+            flex-shrink: 0;
+            background-color: #f5ece2; /* Fondo beige de la nutella */
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .post-image {
+            width: 100%; height: 100%; object-fit: contain; padding: 5px;
+        }
+
+        .post-content {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #222;
+        }
+
+        /* Footer del Post (Iconos de Interacción) */
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 5px;
+        }
+        .interaction-group {
+            display: flex; gap: 30px;
+        }
+        .interaction-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray); font-size: 14px;
+        }
+        .interaction-btn ion-icon { font-size: 20px; }
+        
+        .share-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-gray); font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px; color: #666;">Cargando DigiCurva...</p>
+    </div>
+    <header class="header-background">
+        <div class="header-container">
+            <div class="header-content">
+                
+                <div class="logo">
+                    <img src="./assets/icon.png" style="height: 30px;">
+                    <span class="logo-text">DigiCurva</span>
+                </div>
+                
+                <div class="nav-menu">
+                    <button onclick="window.location.href='./index.php'" style="background: none; border: none; padding: 0; cursor: pointer;">
+                        <ion-icon name="home-outline" style="font-size: 18px; color: #fff;"></ion-icon>
+                    </button>
+                    <span>Ofertas</span>
+                    <span>Nuevo</span>
+                    <span>Mas vendido</span>
+                    <span>Categorías <ion-icon name="caret-down-outline" style="font-size: 10px;"></ion-icon></span>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar">
+                    <ion-icon name="search-outline" style="color: #333;"></ion-icon>
+                </div>
+                
+                <div class="user-menu">
+                    <ion-icon name="heart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
+                    <ion-icon name="cart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar" alt="User" id="user-avatar">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
+                            <span style="font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);" id="user-name">User</span>
+                            <span style="font-size: 11px; color: #eee;">Ajustes</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <div class="left-column">
+            
+            <div class="profile-header-card">
+                <!-- <div class="banner-img"></div>--> 
+                <section class="menuMap">
+                    <button onclick="subscribeUser()" class="btn-subscribe">🔔 suscribete</button>
+                    <label for="control-Zoom">Zoom: </label>
+                    <input type="range" id="control-Zoom" name="control-Zoom" min="50" max="100" value="75" oninput="inZoom()">
+                    <select class="custom-select" id="ubicaciones" name="id_ubicacion" hidden></select>
+                </section>
+                 <div id="visor-dron">
+                    <img class="mapa-render" id="mapa-principal" src="assets/renderItcaG.png" alt="Mapa Base" draggable="false">
+                    <img src="assets/vendedor.png" alt="vendedor" id="vendedor" class="estudent" style="display: block;">
+                    <div id="contentEtiqueta"></div>
+                    <div id="msj1" class="mssgMap">Mueve el mapa para cargar la información.</div>
+                    <div class="radar" id="radar"></div>
+                </div>
+                <div class="profile-info-overlay">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" class="big-avatar" alt="Profile" id="user-avatar2">
+                    <div class="profile-name-overlay" id="user-name2">user</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Productos En Venta</h2>
+            <div class="products-grid" id="productos-grid">
+                <div class="product-card">
+                    <img src="" class="prod-img">
+                    <div class="prod-title">Samsung Galaxy A36 5G</div>
+                    <div class="prod-condition">Usado</div>
+                    <div class="prod-price">$4,500</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Ofertas Activas</h2>
+            <div class="products-grid" id="ofertas-grid">
+                <div class="product-card">
+                    <img src="" class="prod-img">
+                    <div class="prod-title">Samsung Galaxy A36 5G</div>
+                    <div class="prod-condition">Usado</div>
+                    <div class="prod-price">$4,500</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Anuncios Activos</h2>
+            <div class="empty-state" id="carousel-track">
+                <p>No tienes ningún anuncio activo</p>
+                <button class="btn-grey" onclick="goToCreateAd()">Añadir Anuncio</button>
+            </div>
+
+        </div>
+
+        <div class="sidebar">
+            
+            <div class="side-card">
+                <div class="saldo-header">
+                    <span class="saldo-title">Mi Saldo</span>
+                    <a href="#" class="link-blue">Mas Información</a>
+                </div>
+                <div style="font-size: 12px; font-weight: 500;">Ingresos</div>
+                <div class="saldo-amount" id="user-saldo">$4,500.00</div>
+                <div class="saldo-amount" id="user-coints">0 Coints</div>
+
+                <div class="plan-row">
+                    <span class="plan-badge">Ingresar Saldo a favor</span>
+                    <button class="btn-grey">obtener Saldo</button>
+                </div>
+            </div>
+            <div class="side-card">
+                <div class="feed-grid" id="feed"></div>
+            </div>
+            <div class="side-card">
+                <div class="about-header">
+                    <span class="saldo-title">Acerca De Mi</span>
+                    <button class="btn-grey" style="margin:0; font-size: 10px; padding: 4px 8px;">Editar Perfil</button>
+                </div>
+                <!--p class="about-text">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sit amet velit vel orci placerat rutrum eu et lectus. Pellentesque et accumsan nunc. Ut sed tellus at turpis suscipit condimentum. Duis lacinia neque felis, at posuere velit accumsan non.
+                </p-->
+
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 10px;">Contacto</h3>
+                <div class="contact-list">
+                    <div class="contact-item">
+                        <ion-icon name="call" class="contact-icon" style="color: #2196F3;"></ion-icon>
+                        <span id="user-phone">XXX XXX XXXX</span>
+                    </div>
+                    <div class="contact-item">
+                        <ion-icon name="mail" class="contact-icon" style="color: #EA4335;"></ion-icon>
+                        <span id="user-email" style="font-size: 13px;" >Abcdefg@Hijkl.Com</span>
+                    </div>
+                </div>
+            </div>
+            <span class="review-title">Reseñas Del Vendedor</span>
+            
+            <div class="side-card" style="border: none; background-color: #f9f9f9; box-shadow: none;">
+                <div class="review-header">
+                    <div class="review-avatar" style="background-color: #ff8a80;"></div>
+                    <span class="review-name">Jane Doe</span>
+                </div>
+                <div class="stars">
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star-half"></ion-icon>
+                </div>
+                <span class="review-badge">Buen vendedor</span>
+                <p class="review-text">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sit amet velit vel orci placerat rutrum.
+                </p>
+            </div>
+
+            <div class="side-card" style="border: none; background-color: #f9f9f9; box-shadow: none;">
+                <div class="review-header">
+                    <div class="review-avatar" style="background-color: #ff8a80;"></div>
+                    <span class="review-name">Jane doe</span>
+                </div>
+                <div class="stars">
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star"></ion-icon>
+                    <ion-icon name="star"></ion-icon>
+                </div>
+                <span class="review-badge">Muy confiable</span>
+                <p class="review-text">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sit amet velit vel orci placerat rutrum.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+<script>
+    // Aquí PHP "escribe" el valor dentro de las comillas para que JS lo lea
+        const VAPID_PUBLIC_KEY = "<?php echo VAPID_PUBLIC; ?>";
+        
+        // Esto es para que tú mismo verifiques en la consola si funcionó
+       /* console.log("Clave cargada en el navegador:", VAPID_PUBLIC_KEY);*/
+</script>
+<script src="https://ljusstudie.site/Implementacion-notificaciones-push/main.js?v=1.0.5"></script>
+    <script>
+        // Navegación simulada
+        function goToCreateAd() {
+            window.location.href = 'anuncio.html'; // Conecta con la pantalla que hicimos antes
+        }
+        function goToCreateProducto (){
+            window.location.href = 'productoAmbulante.html';
+        }
+
+        // CONFIGURACIÓN
+        async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = [];
+        var API_BASE_URL = 'http://xampp.local/DigiCurvaServer'//'https://ljusstudie.site/DigiCurvaServer';
+        const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
+        const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
+
+        // ESTADO GLOBAL
+        let state = {
+            banners: [],
+            productos: [],
+            ofertas: [],
+            pedidos: [],
+            userProfile: null,
+            loading: true,
+            bannerIndex: 0
+        };
+
+        // --- 1. INICIALIZACIÓN ---
+        window.addEventListener('load', () => {
+            initApp();
+        });
+
+        async function initApp() {
+            // Esperar 3 segundos (Lógica visual solicitada)
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Simular SesionUsuario.getId() -> Asumimos ID 1 para la demo
+            const userId = "1"; // Cambia esto si tienes lógica real de localStorage
+
+            if (!userId) {
+                alert("No hay usuario. Redirigiendo a Login...");
+                window.location.href = '/login'; 
+                return;
+            }
+
+            console.log(`Usuario autenticado: ${userId}. Cargando datos remotos...`);
+            
+            // Cargar datos
+            await fetchRemoteData(userId);
+
+            // Ocultar loading y mostrar app
+            document.getElementById('loading-screen').style.display = 'none';
+            //document.getElementById('app-container').style.display = 'block';
+
+            // Iniciar carrusel automático si hay banners
+            if (state.banners.length > 1) {
+                startCarousel();
+            }
+        }
+
+        // --- 2. FETCH DE DATOS ---
+        async function fetchRemoteData(userId) {
+                configures = await cargarConfiguracion();
+                API_BASE_URL = configures.base_url || API_BASE_URL;
+            try {
+                var idUser = 0;
+                // A. PERFIL
+                try {
+                    const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`);
+                    if(resPerfil.ok) {
+                        const data = await resPerfil.json();
+                        if (!data.success) {
+                            if (data.error === 'Sesión no encontrada o expirada') {
+                                alert('Su inicio de sesión ya expiró, inicia sesión de nuevo.');
+                                window.location.href='login.html';
+                                return;
+                            } else {
+                                alert(data.error)
+                                return
+                            }
+                        }
+                        state.userProfile = {
+                            nombre: data.perfil?.nombre || 'Usuario',
+                            avatar: data.perfil?.foto_perfil_url || DEFAULT_AVATAR,
+                            telefono: data.perfil?.telefono || '',
+                            correo : data.perfil?.correo || '',
+                            saldo: parseFloat(data.perfil?.saldo) || 0,
+                            coints: parseInt(data.perfil?.coints) || 0
+                        };
+                        idUser = data.perfil?.usuario_id || 0;
+                        updateHeaderUI();
+                    }
+                } catch (e) { console.warn("Fallo perfil", e); }
+
+                // B. PRODUCTOS
+                try {
+                    let formData = new FormData();
+                    formData.append('id', idUser);
+                    const resProd = await fetch(`${API_BASE_URL}/Listar_productos.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
+                    if(resProd.ok) {
+                        const data = await resProd.json();
+                        // Mapeo
+                        state.productos = Array.isArray(data.productos) ? data.productos.map(item => ({
+                            producto_id: item.producto_id || 0,
+                            title: item.titulo || item.nombre,
+                            price: parseFloat(item.precio) || 0,
+                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
+                            descripcion: item.descripcion || '',
+                            existencia: item.cantidad_existencia || 0,
+                            tipe: 'normal',
+                            categoria: item.categoria
+                        })) : [];
+                    }
+                } catch (e) { console.warn("Fallo productos", e); }
+
+                // B2. Ofertas
+                try {
+                    let formData = new FormData();
+                    formData.append('id', idUser);
+                    const resProd = await fetch(`${API_BASE_URL}/obtener_Ofertas.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
+                    if(resProd.ok) {
+                        const data = await resProd.json();
+                        // Mapeo
+                        state.ofertas = Array.isArray(data.ofertas) ? data.ofertas.map(item => ({
+                            producto_id: item.producto_id || 0,
+                            title: item.titulo || item.nombre,
+                            price: parseFloat(item.precio) || 0,
+                            descuento: parseFloat(item.descuento) || 0,
+                            fin: item.fecha_finalizacion || '',
+                            image: item.imagen_url || item.imagen || MOCK_PHONE_IMG,
+                            descripcion: item.descripcion || '',
+                            existencia: item.cantidad_existencia || 0
+                        })) : [];
+                        renderProductSections();
+                    }
+                } catch (e) { console.warn("Fallo productos", e.message); }
+                // B3. Productos ambulantes
+                try {
+                    const resProd = await fetch(`${API_BASE_URL}/obtener_feed.php?is_consulta_vendedor=true`);
+                    if(resProd.ok) {
+                        const data = await resProd.json();
+                        // Mapeo
+                        state.productos = [
+                            ...state.productos,
+                            ...(Array.isArray(data.productos) 
+                                ? data.productos.map(item => ({
+                                    producto_id: item.id || 0,
+                                    title: item.nombre || 'title',
+                                    price: parseFloat(item.precio) || 0,
+                                    image: item.imagen || MOCK_PHONE_IMG,
+                                    descripcion: item.descripcion || '',
+                                    ubicacion: item.ubicacion || 'nil',
+                                    existencia: 'infinite',
+                                    tipe: 'ambulante',
+                                    categoria: item.categoria,
+                                    activo: item.activo || "1",
+                                    idubic: item.id_ubicacion
+                                }))
+                                : [])
+                            ];
+
+                        renderProductSections();
+                        console.log(state.productos);
+                    }
+                } catch (e) { console.warn("Fallo productos ambulantes", e.message); }
+                // C. BANNERS
+                try {
+                    let formData = new FormData();
+                    formData.append('id', idUser);
+                    const resBanners = await fetch(`${API_BASE_URL}/obtener_anuncios.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
+                    if(resBanners.ok) {
+                        const data = await resBanners.json();
+                        state.banners = Array.isArray(data.anuncios_activos) ? data.anuncios_activos.map(item => ({
+                            id: item.anuncio_id || item.id,
+                            imageUrl: item.url_imagen || item.imagen,
+                            title: item.titulo || '',
+                            subtitle: item.mensaje || ''
+                        })) : [];
+                        renderBanners();
+                    }
+                } catch (e) { console.warn("Fallo banners", e); }
+                //C2. Ubicaciones
+                try {
+                    const ubicacion = await fetch(`${API_BASE_URL}/consultar_ubicacion.php`);
+                    const ubicSelect = document.getElementById('ubicaciones');
+                    if(ubicacion.ok) {
+                        const data = await ubicacion.json();
+                        if(data.success) {
+                            data.ubicaciones.forEach(element => {
+                                const option = document.createElement('option');
+                                option.text = element.descripcion;
+                                option.value = element.id;
+                                names.push(element.descripcion);
+                                xs.push(element.x);
+                                ys.push(element.y);
+                                ubicSelect.appendChild(option);
+                            });
+                            console.log(data.ubicaciones);
+                            crearEtiquetas();
+                            // Aplicamos el zoom inicial al cargar la página
+                            inZoom(); 
+                        }
+                    }
+                } catch (e) { console.warn("Fallo carga de ubicaciones", e); }
+                //D. Pedidos
+                try {
+                    let formData = new FormData();
+                    formData.append('id', idUser);
+                    const resSolicitud = await fetch(`${API_BASE_URL}/obtener_solicitud_compra_Ambu.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
+                    if(resSolicitud.ok) {
+                        const data = await resSolicitud.json();
+                        if (!data.success) {
+                            console.log(data.error);
+                            return;
+                        }
+                        state.pedidos = Array.isArray(data.solicitudes) ? data.solicitudes.map(item => ({
+                            id: item.solicitud_id,
+                            imagen: item.imagen,
+                            title: item.title,
+                            ubicacion: item.ubicacion,
+                            id_ubicacion: item.id_ubicacion,
+                            fecha_solicitud: item.fecha_solicitud,
+                            nombre: item.nombre,
+                            cantidad: item.cantidad
+                        })) : [];
+                        data.solicitudes.forEach(solicitud => {
+                            createCompradores(solicitud.id_ubicacion-1);
+                        });
+                        renderSolicitud();
+                        vender((data.activo && data.activo === 1));
+                        console.log(state.pedidos);
+                    }
+                } catch (e) { console.warn("Fallo pedidos", e); }
+            } catch (error) {
+                console.error("Error general:", error);
+            }
+        }
+
+        // --- 3. RENDERIZADO UI ---
+
+        function updateHeaderUI() {
+            if (state.userProfile) {
+                document.getElementById('user-name').textContent = state.userProfile.nombre;
+                document.getElementById('user-avatar').src = state.userProfile.avatar;
+                document.getElementById('user-name2').textContent = state.userProfile.nombre;
+                document.getElementById('user-avatar2').src = state.userProfile.avatar;
+                document.getElementById('user-phone').textContent = state.userProfile.telefono;
+                document.getElementById('user-email').textContent = state.userProfile.correo;
+                document.getElementById('user-saldo').textContent = `$${state.userProfile.saldo.toLocaleString()}`;
+                document.getElementById('user-coints').textContent = `${state.userProfile.coints} Coints`;
+            } else {
+                document.getElementById('user-avatar2').src = DEFAULT_AVATAR;
+            }
+        }
+
+        function renderBanners() {
+            const track = document.getElementById('carousel-track');
+            if (state.banners.length === 0) {
+                //track.track.innerHTML = '<span>Sin anuncios por ahora.</span>';
+                return;
+            }
+
+            track.innerHTML = state.banners.map(banner => `
+                <div class="hero-card">
+                    <img src="${banner.imageUrl || MOCK_PHONE_IMG}" class="hero-image" onerror="this.src='${MOCK_PHONE_IMG}'"
+                    width="450" height="250"
+                     onclick='handleToProduct("${empaquetado(product)}")'>
+                    <div class="hero-overlay">
+                        <div class="hero-title">${banner.title}</div>
+                        <div class="hero-subtitle">${banner.subtitle}</div>
+                    </div>
+                </div>
+            `).join('');
+            track.innerHTML += `<button class="btn-grey" onclick="goToCreateAd()">Añadir Anuncio</button>`;
+        }
+
+        // Lógica de productos
+        function createProductCardHTML(product) {
+            return `
+                <div class="product-card">
+                    <input type="button" value="Editar" style="position:absolute; top:5px; right:5px; z-index:10; padding: 4px 8px; font-size: 10px;" onclick='handleToEditProducto("${empaquetado(product)}","${product.tipe}")'>
+                    <img src="${product.image}" class="prod-img" onerror="this.src='${MOCK_PHONE_IMG}'" onclick='handleToProduct("${empaquetado(product)}")'>
+                    <div class="prod-title">${product.title}</div>
+                    <div class="prod-price">$${product.price.toLocaleString()}</div>
+                </div>
+            `;
+        }
+
+        function createOfertaCardHTML(product) {
+            return `
+                <div class="product-card">
+                    <img src="${product.image}" class="prod-img" onerror="this.src='${MOCK_PHONE_IMG}'">
+                    <div class="prod-title">${product.title}</div>
+                    <div class="prod-price"><s>$${product.price.toLocaleString()}</s> <b>$${(product.price * (1 - product.descuento / 100)).toLocaleString()}</b>(${product.descuento}%)</div>
+                    <p>Oferta válida hasta: ${new Date(product.fin).toLocaleDateString()}</p>
+                </div>
+            `;
+        }
+
+        function renderProductSections() {
+            const productos = state.productos.slice(0, 4);
+            const ofertas = state.ofertas.slice(0, 4);
+            document.getElementById('ofertas-grid').innerHTML = ofertas.map(createOfertaCardHTML).join('');
+            document.getElementById('productos-grid').innerHTML = productos.map(createProductCardHTML).join('') + `
+            <div class="add-card-btn" onclick="goToCreateProducto()">
+                <ion-icon name="add" style="font-size: 64px; color: #333; font-weight: 900;"></ion-icon>
+            </div>
+            `;
+        }
+        function renderSolicitud() {
+            const track = document.getElementById('feed');
+            if (state.pedidos.length === 0) {
+                track.innerHTML = '<span>Sin solicitudes de compra por ahora.</span>'
+                return;
+            }
+
+            track.innerHTML = state.pedidos.map(pedidos => `
+                <div class="post-card">
+                <div class="post-header">
+                    <div class="user-info">
+                        <span class="user-name">${pedidos.cantidad} ${pedidos.title}</span>
+                        <span class="user-location">${pedidos.ubicacion}</span>
+                    </div>
+                    <div class="post-meta">
+                        <span>${pedidos.fecha_solicitud}</span>                    
+                    </div>
+                </div>
+                
+                <div class="post-body">
+                    <div class="post-image-container" style="background-color: #fff;">
+                        <img src="${pedidos.imagen}" class="post-image" alt="${pedidos.title}">
+                    </div>
+                    <div class="post-content">
+                        ${pedidos.nombre} solicitó este producto, atiendelo.
+                    </div>
+                </div>
+
+                <div class="post-footer">
+                    <div class="interaction-group">
+                        <button onclick="cancelarP(${pedidos.id})">cancelar</button>
+                        <button onclick="atendidoP(${pedidos.id})">Ya lo atendí.</button>
+                    </div>
+                </div>
+            </div>
+            `).join('');
+        }
+        async function editarP(str, id) {
+            try {
+                    let formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('status',str);
+                    const resSolicitud = await fetch(`${API_BASE_URL}/estatus_solicitud_compra_Ambu.php`,{
+                        method: 'POST',
+                        body: formData
+                    });
+                    if(resSolicitud.ok) {
+                        const data = await resSolicitud.json();
+                        if (!data.success) alert('Falló la acción por '+data.error);
+                        return data.success;
+                    }
+                } catch (e) { 
+                    alert('Falló la acción.');
+                    console.warn("Fallo pedidos", e); 
+                    return false;
+                }
+        }
+        async function cancelarP(id) {
+            const result = await editarP('cancelada',id);
+            if (result) {
+                location.reload();
+            }
+        }
+        async function atendidoP(id) {
+            const result = await editarP('atendida',id);
+            if (result) {
+                location.reload();
+            }
+        }
+        // --- 4. LÓGICA CARRUSEL ---
+        function startCarousel() {
+            const track = document.getElementById('carousel-track');
+            setInterval(() => {
+                state.bannerIndex++;
+                if (state.bannerIndex >= state.banners.length) {
+                    state.bannerIndex = 0;
+                }
+                const translateX = -(state.bannerIndex * 100);
+                track.style.transform = `translateX(${translateX}%)`;
+            }, 4000);
+        }
+
+        // --- 5. EVENTOS ---
+        function handleSearch() {
+            const text = document.getElementById('search-input').value;
+            if (text.trim()) alert(`Buscando: ${text}`);
+        }
+
+        function handleAddToCart(title) {
+            alert(`Agregado: ${title}`);
+        }
+
+        function navigateTo(path) {
+            console.log("Navegando a:", path);
+            window.location.href = path; // O la lógica que prefieras
+        }
+
+        function handleToProduct(parameter) {
+            let param1 = encodeURIComponent(parameter);
+            let param2 = encodeURIComponent(empaquetado(state.userProfile));
+            window.location.href = `producto.html?product=${param1}&user=${param2}`;
+        }
+        function empaquetado(producto) {
+            let product = JSON.stringify(producto);
+            let base64Product = btoa(product);
+            return base64Product.toString();
+        }
+        function handleToEditProducto(parameter, tipe) {
+            if (tipe === 'ambulante') {
+                let param1 = encodeURIComponent(parameter);
+                let param2 = encodeURIComponent(empaquetado(state.userProfile));
+                window.location.href = `productoAmbulante.html?product=${param1}`;
+            }else{
+                let param1 = encodeURIComponent(parameter);
+                let param2 = encodeURIComponent(empaquetado(state.userProfile));
+                window.location.href = `writeProducto.html?product=${param1}`;
+            }
+        }
+        //--------------------MAPA------------------------
+        const mapa = document.getElementById('mapa-principal');
+        const visor = document.getElementById('visor-dron');
+        const radar = document.getElementById('radar');
+        const vendedor = document.getElementById('vendedor');
+        //simulacion
+        const selectUbic = {'value':0};
+        let arrastrando = false;
+        let iniciado = false;
+        let inicioX = 0, inicioY = 0;
+        let actualX = -557, actualY = -534;
+        let etiquetas = [];
+        let compradores = [];
+        let vendiendo = false;
+        const names = [];
+        const xs = [];
+        const ys = [];
+        function crearEtiquetas() {
+            const content = document.getElementById('contentEtiqueta');
+            for (let i = 0; i < names.length; i++) {
+                var element = document.createElement('div');
+                element.classList.add('etiqueta');
+                content.appendChild(element);
+                element.textContent = names[i];
+                displayObj(element,null,xs[i],ys[i]);
+                etiquetas.push(element);
+                //crear arrays Bidimencionales en compradores
+                const comprador = {
+                    'n':0,
+                    element:null
+                }
+                compradores.push(comprador)
+            }
+        }
+        function displayObj(obj, escala, x, y) {
+            const escalaActual = escala || document.getElementById('control-Zoom').value / 100;
+            const anchoConZoom = mapa.clientWidth * escalaActual;
+            const altoConZoom = mapa.clientHeight * escalaActual;
+            const _objPossx = x/100;
+            const _objPossy = y/100;
+            //console.log(_objPossx);
+            
+            let _x = anchoConZoom * _objPossx;
+            let _y = altoConZoom * _objPossy;
+            //console.log(mapa);
+            
+            obj.style.transform = `translate3d(${actualX+_x}px,${actualY+_y}px,0)`;
+        }
+        // --- FUNCIÓN DE ZOOM ---
+        function inZoom() {
+            const valorControl = document.getElementById('control-Zoom').value;
+            const escala = valorControl / 100; // 125 se convierte en 1.25
+            
+            if (iniciado) {
+                // Calculamos límites
+                const anchoConZoom = mapa.clientWidth * escala;
+                const altoConZoom = mapa.clientHeight * escala;
+    
+                const limiteX = visor.clientWidth - anchoConZoom;
+                const limiteY = visor.clientHeight - altoConZoom;
+    
+                if (anchoConZoom > visor.clientWidth) {
+                    actualX = Math.min(0, Math.max(actualX, limiteX));
+                } else {
+                    actualX = 0; 
+                }
+                if (altoConZoom > visor.clientHeight) {
+                    actualY = Math.min(0, Math.max(actualY, limiteY));
+                } else {
+                    actualY = 0; 
+                }
+            } else {
+                iniciado = true;
+            }
+            // Activamos tu transición suave para el zoom
+            for (let i = 0; i < etiquetas.length; i++) {
+                //en etiquetas
+                etiquetas[i].style.transition = 'transform 0.3s ease';
+                displayObj(etiquetas[i], escala, xs[i],ys[i]);
+                //en monitos
+                if (compradores[i].element) {
+                    compradores[i].element.style.transition = 'transform 0.3s ease';
+                    displayObj(compradores[i].element, escala, xs[i],ys[i]);
+                }
+            }
+            mapa.style.transition = 'transform 0.3s ease';
+            radar.style.transition = 'transform 0.3s ease';
+            vendedor.style.transition = 'transform 0.3s ease';
+            mapa.style.transform = `translate3d(${actualX}px, ${actualY}px, 0) scale(${escala})`;
+            displayObj(radar,escala,xs[selectUbic.value],ys[selectUbic.value]);
+            displayObj(vendedor,escala,xs[selectUbic.value],ys[selectUbic.value]);
+        }
+
+        // --- LÓGICA DE ARRASTRE ---
+        const iniciarArrastre = (clienteX, clienteY) => {
+            arrastrando = true;
+                
+            // TRUCO: Apagamos la transición al arrastrar para que el movimiento sea instantáneo y sin lag
+            mapa.style.transition = 'none'; 
+            radar.style.transition = 'none';
+            vendedor.style.transition = 'none';
+            for (let i = 0; i < etiquetas.length; i++) {
+                etiquetas[i].style.transition = 'none';
+                if (compradores[i].element) {
+                    compradores[i].element.style.transition = 'none';
+                }
+            } 
+                
+            inicioX = clienteX - actualX;
+            inicioY = clienteY - actualY;
+            document.body.style.cursor = 'grabbing';
+        };
+
+        const moverArrastre = (clienteX, clienteY) => {
+            if (!arrastrando) return;
+            document.getElementById('msj1').style.display = 'none';
+            let nuevaX = clienteX - inicioX;
+            let nuevaY = clienteY - inicioY;
+
+            // Obtenemos la escala actual del input
+            const escalaActual = document.getElementById('control-Zoom').value / 100;
+
+            // Calculamos límites
+            const anchoConZoom = mapa.clientWidth * escalaActual;
+            const altoConZoom = mapa.clientHeight * escalaActual;
+
+            const limiteX = visor.clientWidth - anchoConZoom;
+            const limiteY = visor.clientHeight - altoConZoom;
+
+            if (anchoConZoom > visor.clientWidth) {
+                nuevaX = Math.min(0, Math.max(nuevaX, limiteX));
+            } else {
+                nuevaX = 0; 
+            }
+
+            if (altoConZoom > visor.clientHeight) {
+                nuevaY = Math.min(0, Math.max(nuevaY, limiteY));
+            } else {
+                nuevaY = 0; 
+            }
+
+            actualX = nuevaX;
+            actualY = nuevaY;
+            //console.log(`(${actualX},${actualY})`);
+            
+            mapa.style.transform = `translate3d(${actualX}px, ${actualY}px, 0) scale(${escalaActual})`;
+            displayObj(radar,escalaActual,xs[selectUbic.value],ys[selectUbic.value]);
+            displayObj(vendedor,escalaActual,xs[selectUbic.value],ys[selectUbic.value]);
+            for (let i = 0; i < etiquetas.length; i++) {
+                displayObj(etiquetas[i], escalaActual, xs[i],ys[i]);
+                if (compradores[i].element) {
+                    displayObj(compradores[i].element, escalaActual, xs[i],ys[i]);
+                }
+            }
+        };
+
+        const terminarArrastre = () => {
+            arrastrando = false;
+            document.body.style.cursor = 'default';
+        };
+
+        // Eventos de Ratón
+        visor.addEventListener('mousedown', (e) => iniciarArrastre(e.clientX, e.clientY));
+        window.addEventListener('mousemove', (e) => {
+            if(arrastrando) e.preventDefault();
+            moverArrastre(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', terminarArrastre);
+        window.addEventListener('mouseleave', terminarArrastre); // Suelta el mapa si el ratón sale del visor
+
+        // Eventos Táctiles (Móviles)
+        visor.addEventListener('touchstart', (e) => iniciarArrastre(e.touches[0].clientX, e.touches[0].clientY));
+        window.addEventListener('touchmove', (e) => {
+            if(arrastrando) e.preventDefault();
+            moverArrastre(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+        window.addEventListener('touchend', terminarArrastre);
+        //simulacion
+        // selectUbic.addEventListener('change',()=>{
+        //     displayObj(radar,null,xs[selectUbic.value],ys[selectUbic.value]);
+        //     displayObj(vendedor,null,xs[selectUbic.value],ys[selectUbic.value]);
+        // });
+        function vender(valor) {
+            vendiendo = valor;
+            if (valor) {
+                radar.style.display='block';
+                for (let i = 0; i < compradores.length; i++) {
+                    if (compradores[i].element) {
+                        compradores[i].element.style.display='block';
+                    }
+                }
+            } else {
+                radar.style.display='none';
+                for (let i = 0; i < compradores.length; i++) {
+                    if (compradores[i].element) {
+                        compradores[i].element.style.display='none';
+                    }
+                }
+            }
+        }
+        function createCompradores(optUbic) {
+            let comprador;
+            compradores[optUbic].n += 1;
+            if (compradores[optUbic].n ==1) {
+                comprador = document.createElement('img');
+                comprador.classList.add('estudent');
+                visor.appendChild(comprador);
+                comprador.src = './assets/estudiante.png';
+                comprador.draggable = false;
+            }else{
+                visor.removeChild(compradores[optUbic].element);
+                comprador = document.createElement('div');
+                comprador.classList.add('estudents');
+                visor.appendChild(comprador);
+                comprador.innerHTML = `
+                <img src="./assets/estudiantes.png" alt="vendedor" draggable="false">
+                <div class="numberStudent">${compradores[optUbic].n}</div> 
+                `;
+            }
+            displayObj(comprador,null,xs[optUbic],ys[optUbic]);
+            compradores[optUbic].element = comprador;
+            if (vendiendo) {
+                comprador.style.display='block';
+            } else {
+                comprador.style.display='none';
+            }
+        }
+        let indiceComprador = 0;
+        function seguir(obj) {
+            indiceComprador += 1;
+            const optUbic = document.getElementById('ubicacionC');
+            createCompradores(optUbic.value);
+            obj.value = `Creado ${indiceComprador}, Crear otro.`;
+        }
+        function poss() {
+            const y = document.getElementById('possY').value;
+            const x = document.getElementById('possX').value;
+            displayObj(vendedor,null,x,y);
+        }
+    </script>
+
+</body>
+</html>

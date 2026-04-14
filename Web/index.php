@@ -349,9 +349,9 @@ if(!isset($_COOKIE['token'])){
                         </div>
                         <div class="spacer"></div>
                         <div class="user-info">
-                            <img id="user-avatar" src="" class="avatar" onclick="window.location.href='./perfil.html'" alt="Avatar">
+                            <img id="user-avatar" src="" class="avatar" onclick="window.location.href='./perfil.php'" alt="Avatar">
                             <div class="user-details">
-                                <span class="user-name"><a id="user-name" href="./perfil.html">Usuario</a></span>
+                                <span class="user-name"><a id="user-name" href="./perfil.php">Usuario</a></span>
                                 <span class="user-link">Ajustes</span>
                             </div>
                         </div>
@@ -523,6 +523,32 @@ if(!isset($_COOKIE['token'])){
                         console.log(state.productos);
                     }
                 } catch (e) { console.warn("Fallo productos", e.message); }
+                try {
+                    const resProd = await fetch(`${API_BASE_URL}obtener_feed.php?is_consulta_vendedor=true`);
+                    if(resProd.ok) {
+                        const data = await resProd.json();
+                        // Mapeo
+                        state.productos = [
+                            ...state.productos,
+                            ...(Array.isArray(data.productos) 
+                                ? data.productos.map(item => ({
+                                    producto_id: item.id || 0,
+                                    title: item.nombre || 'title',
+                                    price: parseFloat(item.precio) || 0,
+                                    image: item.imagen || MOCK_PHONE_IMG,
+                                    descripcion: item.descripcion || '',
+                                    ubicacion: item.ubicacion || 'nil',
+                                    existencia: 'infinite',
+                                    tipe: 'ambulante',
+                                    categoria: item.categoria,
+                                    activo: item.activo || "1",
+                                    idubic: item.id_ubicacion
+                                }))
+                                : [])
+                            ];
+                        console.log(state.productos);
+                    }
+                } catch (e) { console.warn("Fallo productos Ambulantes", e.message); }
                 // B2. Ofertas
                 try {
                     const resProd = await fetch(`${API_BASE_URL}obtener_Ofertas.php`);
