@@ -6,7 +6,7 @@
     <title>Iniciar Sesión - DigiCurva</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         /* --- RESET Y ESTILOS GLOBALES --- */
         * {
@@ -278,7 +278,7 @@
                         </button>
 
                         <div class="form-footer">
-                            <span class="footer-text">
+                            <span class="footer-text animate__animated" id="registerLink">
                                 ¿No tiene una cuenta? 
                                 <a href="./registro.html" class="link-text">Registrarse en su lugar</a>
                             </span>
@@ -358,14 +358,25 @@
                 console.log('Respuesta:', data);
                 
                 // Alert solicitado
-                alert(`Petición enviada exitosamente a: \n${baseUrl}`);
+                alert(`Enviando solicitud al servidor.`);
 
                 if (data.success) {
                     // Redirección (asumiendo que index.php está en la raíz)
                     window.location.href = './index.php'; 
                 } else {
                     // Si la API responde pero no hay usuario_id (ej. credenciales mal)
-                    if(data.error) alert("Error: " + data.error);
+                    if(data.error) {
+                        alert("Error: " + data.error);
+                        
+                        if (data.error === ("Usuario no encontrado: "+datosLogin.correo)) {
+                            setTimeout(() => {
+                                document.getElementById("registerLink").classList.add("animate__heartBeat");
+                            }, 200);
+                            setTimeout(() => {
+                                document.getElementById("registerLink").classList.remove("animate__heartBeat");
+                            }, 3000);
+                        }
+                    }
                 }
 
             } catch (error) {

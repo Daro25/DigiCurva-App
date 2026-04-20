@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - DigiCurva</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        /* --- RESET Y BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            width: 100%; 
+            min-height: 100vh; 
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- FONDO (Replicando el estilo de tu código) --- */
+        .background-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background-image: url('./assets/fondoHome.jpg'); /* Ruta de tu proyecto */
+            background-size: cover; background-position: center;
+            /* Fallback color por si no carga la imagen */
+            background-color: #87CEEB; 
+        }
+        .background-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            /* Gradiente azul claro semi-transparente como en el diseño */
+            background: linear-gradient(to bottom, rgba(100, 200, 255, 0.5), rgba(135, 206, 235, 0.7));
+        }
+
+        /* --- LAYOUT --- */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            width: 100%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: auto; /* Empuja el card hacia el centro */
+        }
+        
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            width: 45px; 
+            height: 45px; 
+            background: linear-gradient(135deg, #003b8e, #0056b3); 
+            border-radius: 12px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .logo-icon ion-icon { color: white; font-size: 28px; }
+        
+        .logo-text {
+            font-family: 'Lilita One', cursive; /* Fuente gruesa y redondeada */
+            font-size: 36px; 
+            color: #fff; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+        .nav-link { 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: #111; /* Texto oscuro como en el diseño */
+            text-decoration: none; 
+            cursor: pointer; 
+            transition: color 0.2s;
+        }
+        .nav-link:hover { color: #0056b3; }
+
+        /* --- CONTENEDOR CENTRAL (MODAL) --- */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            padding-bottom: 10vh; /* Ajuste óptico vertical */
+        }
+
+        .recovery-card {
+            background-color: rgba(245, 248, 250, 0.95); /* Blanco ligeramente grisáceo y translúcido */
+            border-radius: 20px; 
+            padding: 50px 60px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 700px; /* Tarjeta ancha */
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .card-title {
+            font-family: 'Lilita One', cursive;
+            font-size: 46px;
+            color: #000;
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        .card-subtitle {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* --- FORMULARIO --- */
+        .form-row {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .input-email {
+            flex: 1; /* Ocupa el espacio restante */
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-email:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-submit {
+            background-color: #2563eb; /* Azul brillante del diseño */
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+        }
+        .btn-submit:hover { background-color: #1d4ed8; }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { background-color: #93c5fd; cursor: not-allowed; }
+
+        /* Spinner de carga para el botón */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3); 
+            border-radius: 50%; 
+            border-top: 3px solid #fff;
+            width: 20px; height: 20px; 
+            animation: spin 1s linear infinite; 
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .recovery-card { padding: 40px 25px; }
+            .card-title { font-size: 32px; }
+            .form-row { flex-direction: column; } /* En móviles, botón debajo del input */
+            .btn-submit { padding: 15px 35px; }
+            .logo-text { font-size: 28px; }
+            .nav-links { gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-container"></div>
+    <div class="background-overlay"></div>
+
+    <div class="container">
+        
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <ion-icon name="phone-portrait-outline"></ion-icon>
+                </div>
+                <span class="logo-text">DigiCurva</span>
+            </div>
+            <nav class="nav-links">
+                <a href="login.html" class="nav-link">Acceder</a>
+                <a href="registro.html" class="nav-link">Registrarse</a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div class="recovery-card">
+                <h1 class="card-title">¿Olvidó su contraseña?</h1>
+                <p class="card-subtitle">Introduzca su correo electrónico:</p>
+                
+                <form id="recoveryForm" onsubmit="handleRecovery(event)">
+                    <div class="form-row">
+                        <input 
+                            type="email" 
+                            id="emailInput" 
+                            class="input-email" 
+                            placeholder="ejemplo@correo.com" 
+                            required 
+                        >
+                        <button type="submit" id="submitBtn" class="btn-submit">
+                            <span id="btnText">Continuar</span>
+                            <div id="btnSpinner" class="spinner"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+    // CONFIGURACIÓN
+    async function cargarConfiguracion() {
+        const respuesta = await fetch('config.json');
+        const config = await respuesta.json();
+        return config;
+    }
+
+    var configures = [];
+        var API_BASE_URL = 'https://tudominio.com/api'; // Ajusta la URL de tu backend
+        const ENDPOINT_RECUPERAR = 'recoveryPassword.php';
+
+        // --- LÓGICA DEL FORMULARIO ---
+        async function handleRecovery(event) {
+            event.preventDefault(); // Evita recargar la página
+            configures = await cargarConfiguracion();
+            API_BASE_URL = configures.base_url || API_BASE_URL;
+            const emailInput = document.getElementById('emailInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                alert('Por favor, ingrese un correo válido.');
+                return;
+            }
+
+            // Datos estructurados en JSON como solicitaste
+            const datosPeticion = {
+                correo: email
+            };
+
+            // UI: Estado de carga
+            emailInput.disabled = true;
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'block';
+
+            try {
+                // Implementación exacta del fetch solicitado
+                const response = await fetch(`${API_BASE_URL}${ENDPOINT_RECUPERAR}`, {
+                    method: 'POST',
+                    // IMPORTANTE: Enviamos los datos como JSON
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosPeticion)
+                });
+
+                // Lógica asumiendo una respuesta JSON del backend
+                if (response.ok) {
+                    const data = await response.json();
+                    // Aquí manejas la respuesta de tu backend
+                    if(data.success){
+                        alert('Se han enviado las instrucciones a tu correo electrónico.');
+                        window.location.href= 'recoveryCorrect.html';
+                    }
+                    
+                    emailInput.value = ''; // Limpiar el input
+                } else {
+                    // Si el status HTTP no es 200-299
+                    console.warn("Fallo al solicitar recuperación", response.status);
+                    alert('Ocurrió un error al procesar tu solicitud. Intenta nuevamente.');
+                }
+
+            } catch (error) {
+                console.error("Error en la petición:", error.message);
+                // NOTA FRONTEND: Este alert es para simular éxito visual si no tienes backend conectado ahora mismo
+                alert('Petición enviada (Simulación). Correo: ' + email);
+            } finally {
+                // UI: Restaurar estado original
+                emailInput.disabled = false;
+                submitBtn.disabled = false;
+                btnText.style.display = 'block';
+                btnSpinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

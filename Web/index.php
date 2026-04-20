@@ -13,6 +13,7 @@ if(!isset($_COOKIE['token'])){
     <title>DigiCurva</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         /* --- ESTILOS GLOBAL Y RESET --- */
         * {
@@ -348,7 +349,7 @@ if(!isset($_COOKIE['token'])){
                             <span class="logo-text">DigiCurva</span>
                         </div>
                         <div class="spacer"></div>
-                        <div class="user-info">
+                        <div class="user-info animate__animated" id="user-animated">
                             <img id="user-avatar" src="" class="avatar" onclick="window.location.href='./perfil.php'" alt="Avatar">
                             <div class="user-details">
                                 <span class="user-name"><a id="user-name" href="./perfil.php">Usuario</a></span>
@@ -440,8 +441,8 @@ if(!isset($_COOKIE['token'])){
     </div>
 
     <script>
-        // CONFIGURACIÓN
-        async function cargarConfiguracion() {
+    // CONFIGURACIÓN
+    async function cargarConfiguracion() {
         const respuesta = await fetch('config.json');
         const config = await respuesta.json();
         return config;
@@ -464,6 +465,16 @@ if(!isset($_COOKIE['token'])){
 
         // --- 1. INICIALIZACIÓN ---
         window.addEventListener('load', () => {
+            setInterval(() => {
+                //animacion de perfil cada 5000
+                const userAnimated = document.getElementById('user-animated');
+                if (userAnimated) {
+                    userAnimated.classList.add('animate__rubberBand');
+                    setTimeout(() => {//removedor
+                        userAnimated.classList.remove('animate__rubberBand');
+                    }, 2000);
+                }
+            }, 5000);
             initApp();
         });
 
