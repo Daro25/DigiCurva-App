@@ -299,8 +299,10 @@
                         alert('Se han enviado las instrucciones a tu correo electrónico.');
                         window.location.href= 'recoveryCorrect.html';
                     }
-                    
-                    emailInput.value = ''; // Limpiar el input
+                    else {
+                        alert('No se pudo procesar tu solicitud. Intenta nuevamente: ' + (data.error ?? data.resultado ?? 'Error desconocido.'));
+                    }
+                    //emailInput.value = ''; // Limpiar el input
                 } else {
                     // Si el status HTTP no es 200-299
                     console.warn("Fallo al solicitar recuperación", response.status);
