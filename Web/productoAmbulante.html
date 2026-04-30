@@ -300,10 +300,34 @@
                 box-shadow: 0 0 0 200px rgba(0, 255, 255, 0.1);
             }
         }
+        /* --- PANTALLA DE CARGA --- */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
-
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px; color: #666;">Registrando...</p>
+    </div>
+<main id="app-container">
     <header class="header-background">
         <div class="header-container">
             <div class="header-content">
@@ -331,7 +355,7 @@
             </div>
         </div>
     </header>
-
+    
     <main class="main-container">
         
         <form id="formulario" enctype="multipart/form-data">
@@ -370,6 +394,17 @@
                         <input type="button" value="siquiente" id="cerrarDetail">
                     </div>
                 </details>
+                <details class="info-card" id="automatizar"><summary>Automatizar</summary><br>
+                    <div class="input-block">
+                        <label class="input-label" for="apagar">Auto Apagado</label>
+                        <input type="time" name="apagar" class="text-input" id="autoOn">
+                    </div>
+                    <div class="input-block">
+                        <label class="input-label" for="prender">Auto encendido</label>
+                        <input type="time" name="prender" class="text-input" id="autoOff">
+                    </div>
+                    <button type="button" id="automatizarBtn">Siguiente.</button>
+                </details>
                 <div class="main-image-placeholder" id="mainPreview">
                     <img id="imgDisplay" src="">
                     <span id="placeholderText">Vista previa</span>
@@ -400,6 +435,7 @@
                             <label for="ubicacion" class="input-label inline">¿En que parte del Tec?</label>
                             <select class="custom-select" id="ubicaciones" name="id_ubicacion"></select>
                         </div>
+                        <button type="submit" class="btn-save">Registrar</button>
                 </section>
                 <div id="visor-dron">
                     <img class="mapa-render" id="mapa-principal" src="assets/renderItcaG.png" alt="Mapa Base" draggable="false">
@@ -413,7 +449,7 @@
         </div>
     </form>
     </main>
-
+</main>
     <script>
         async function cargarConfiguracion() {
         const respuesta = await fetch('config.json');
@@ -499,6 +535,8 @@
                 }
             }
             try {
+                document.getElementById('loading-screen').style.display = 'block';
+                document.getElementById('app-container').style.display = 'none';
                 var urlimagen = null;
                 urlimagen = await uploadImage();
                 if (urlimagen == null){
@@ -539,6 +577,8 @@
                 console.log(error);
                 
             }
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
         });
         async function uploadImage() {
             if (isUpdate) return document.getElementById('url_ok_imagen').value;
@@ -587,10 +627,38 @@
         }
 
         document.getElementById('cerrarDetail').addEventListener('click',function(){
-            window.location.href = '#categoria';
+            window.location.href = '#automatizar';
             document.getElementById('details').open = false});
         document.getElementById('siguiente2').addEventListener('click',function(){
             window.location.href = '#ubicaciones';
+        });
+        document.getElementById('automatizarBtn').addEventListener('click',function() {
+            window.location.href = '#categoria';
+            document.getElementById('automatizar').open = false;
+        });
+        const autoOn = document.getElementById('autoOn');
+        const autoOff = document.getElementById('autoOff');
+        autoOff.addEventListener('change',function(){
+            if (autoOn.value === ''||autoOff.value === '') {
+                return;
+            }
+            const encendidoTime = new Date('1970-01-01T'+autoOff.value+':00');
+            const apagadoTime = new Date('1970-01-01T'+autoOn.value+':00');
+            if (encendidoTime > apagadoTime) {
+                autoOff.value = '';
+                alert('La hora de encendido no puede ser posterior a la hora de apagado');
+            }
+        });
+        autoOn.addEventListener('change',function(){
+            if (autoOn.value === ''||autoOff.value === '') {
+                return;
+            }
+            const encendidoTime = new Date('1970-01-01T'+autoOff.value+':00');
+            const apagadoTime = new Date('1970-01-01T'+autoOn.value+':00');
+            if (encendidoTime > apagadoTime) {
+                autoOn.value = '';
+                alert('La hora de encendido no puede ser posterior a la hora de apagado');
+            }
         });
         //-----------------MAPA--------------------------------------
         const mapa = document.getElementById('mapa-principal');
