@@ -524,6 +524,12 @@
         formulario.addEventListener('submit', async(e)=>{
             event.preventDefault();
             var datos = new FormData(formulario);
+            if(!!autoOn.value ^ !!autoOff.value) {
+                autoOff.value = '';
+                autoOn.value = '';
+                alert('Debes llenar ambos campos de automatización para continuar o dejarlos vacíos para no usar esta función');
+                return;
+            }
             if (document.getElementById('categoria').value == 'Selecciona una opción.') {
                 if(window.confirm('Debes seleccionar una categoria antes de enviar.')){
                     window.location.href = '#categoria';
@@ -633,6 +639,20 @@
             window.location.href = '#ubicaciones';
         });
         document.getElementById('automatizarBtn').addEventListener('click',function() {
+            if(!!autoOn.value ^ !!autoOff.value) {
+                autoOff.value = '';
+                autoOn.value = '';
+                alert('Debes llenar ambos campos de automatización para continuar o dejarlos vacíos para no usar esta función');
+                return;
+            }
+             else if (autoOn.value && autoOff.value) {
+                const encendidoTime = new Date('1970-01-01T'+autoOff.value+':00');
+                const apagadoTime = new Date('1970-01-01T'+autoOn.value+':00');
+                if (encendidoTime > apagadoTime) {
+                    alert('La hora de encendido no puede ser posterior a la hora de apagado');
+                    return;
+                }
+            }
             window.location.href = '#categoria';
             document.getElementById('automatizar').open = false;
         });
