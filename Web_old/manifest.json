@@ -1,0 +1,17 @@
+{
+  "name": "DigiCurva Marketplace",
+  "short_name": "DigiCurva",
+  "description": "El marketplace digital para estudiantes",
+  "start_url": "./perfil.php",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#2196F3",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./assets/icon.png",
+      "sizes": "1181x1181",
+      "type": "image/png"
+    }
+  ]
+}

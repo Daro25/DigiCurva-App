@@ -9,43 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
     <style>
-        /* --- VARIABLES Y RESET --- */
-        :root {
-            --primary-blue: #3b82f6; /* Azul brillante del botón check */
-            --header-bg-color: rgba(56, 189, 248, 0.4);
-            --bg-body: #fff;
-            --grey-placeholder: #e0e0e0;
-            --border-color: #ccc;
-            --max-width: 1200px;
-            --radius: 12px;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-        body { background-color: var(--bg-body); color: #333; padding-bottom: 80px; }
-
-        /* --- HEADER (Versión Dashboard Vendedor) --- */
-        .header-background {
-            background-image: url('assets/fondoHome.jpg');
-            background-size: cover;
-            background-position: center;
-            margin-bottom: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header-container { background-color: var(--header-bg-color); width: 100%; padding: 10px 0; }
-        .header-content {
-            max-width: var(--max-width); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
-        }
-        .logo { display: flex; align-items: center; gap: 10px; }
-        .logo-text { font-weight: 900; font-size: 24px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-        
-        /* Menú específico de esta vista */
-        .nav-menu { display: flex; gap: 25px; font-size: 15px; font-weight: 500; color: #000; } /* Texto negro en este header según imagen */
-        .nav-menu span { cursor: pointer; transition: color 0.2s; }
-        .nav-menu span:hover { color: #fff; }
-
-        .user-menu { display: flex; align-items: center; gap: 15px; color: #fff; font-size: 14px; }
-        .user-mini-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
-
         /* --- CONTENEDOR PRINCIPAL --- */
         .main-container {
             max-width: var(--max-width);
@@ -194,37 +157,7 @@
     </style>
 </head>
 <body>
-
-    <header class="header-background">
-        <div class="header-container">
-            <div class="header-content">
-                <div class="logo">
-                    <img src="./assets/icon.png" style="height: 30px;">
-                    <span class="logo-text">DigiCurva</span>
-                </div>
-                <div class="nav-menu">
-                    <ion-icon name="home-outline" style="font-size: 20px; cursor: pointer;"></ion-icon>
-                    <span>Inventario</span>
-                    <span>Ordenes</span>
-                    <span>Anuncios</span>
-                    <span>Reportes</span>
-                    <span>Rendimiento</span>
-                </div>
-                <div class="user-menu">
-                    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar">
-                        <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
-                            <span style="font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Naomi Ruiz</span>
-                            <span style="font-size: 11px; color: #eee;">Ajustes</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
     <main class="main-container">
-        
         <form id="formulario" enctype="multipart/form-data">
         <div class="top-bar">
             <h1 class="page-title">Añadir producto</h1>

@@ -351,7 +351,7 @@
 
                                     <form id="formIMG" enctype="multipart/form-data" hidden>
                                     <input type="text" id="nombreIMG" name="name" hidden>
-                                    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)" name="image" hidden>
+                                    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)" name="image" hidden="true">
                                     </form>
                                 </div>
 
@@ -371,9 +371,14 @@
         const config = await respuesta.json();
         return config;
     }
-
+    var URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
+    var API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
     var configures = [];
-
+async function inicio(params) {
+    configures = await cargarConfiguracion();
+    API_BASE_URL = configures.base_url || API_BASE_URL;
+    URL_SUBIR_IMAGEN = configures.base_url || URL_SUBIR_IMAGEN;
+}
         // ESTADO GLOBAL
         let photoFile = null;
         let photoUrlUploaded = ""; // URL final después de subir a PHP
@@ -387,7 +392,7 @@
             input.click(); 
         }
 
-        function handleFileSelect(input) {
+        function handleFileSelected(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 photoFile = file;

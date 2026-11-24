@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIABLES Y RESET --- */
+        :root {
+            --primary-blue: #2196F3;
+            --secondary-grey: #888;
+            --bg-body: #fff;
+            --header-bg-color: rgba(56, 189, 248, 0.4);
+            --max-width: 1200px;
+            --toggle-green: #4CD964;
+            --border-radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-body); color: #333; padding-bottom: 80px; }
+
+        /* --- HEADER (Estándar DigiCurva) --- */
+        .header-background {
+            background-image: url('assets/fondoHome.jpg');
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-container { background-color: var(--header-bg-color); width: 100%; padding: 10px 0; }
+        .header-content {
+            max-width: var(--max-width); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-weight: 900; font-size: 24px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .nav-menu { display: flex; gap: 20px; font-size: 14px; font-weight: 500; color: #fff; }
+        .nav-menu span { cursor: pointer; display: flex; align-items: center; gap: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .search-bar { display: flex; align-items: center; background: #fff; border-radius: 4px; padding: 5px 10px; width: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .search-bar input { border: none; outline: none; flex: 1; font-size: 14px; background: transparent; }
+        .user-menu { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #fff; }
+        .user-mini-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .page-header { margin-bottom: 30px; }
+        .page-title { font-size: 28px; font-weight: 500; color: #000; }
+
+        /* Grid del Formulario */
+        .edit-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* 2/3 para info, 1/3 para ajustes */
+            gap: 60px;
+        }
+
+        /* --- COLUMNA IZQUIERDA (Info Personal) --- */
+        .form-section { display: flex; flex-direction: column; gap: 25px; }
+
+        .row-2-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .label { font-size: 15px; color: #333; font-weight: 400; }
+        
+        .input-field {
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus { border-color: var(--primary-blue); }
+        textarea.input-field { resize: vertical; min-height: 120px; font-family: inherit; }
+
+        /* Sección Foto de Perfil (Ajustada sin portada) */
+        .profile-photo-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .avatar-container {
+            position: relative;
+            width: fit-content;
+        }
+        .avatar-preview {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+        .photo-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .btn-circle {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 22px;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        .btn-circle:active { transform: scale(0.95); }
+        .btn-blue { background-color: var(--primary-blue); }
+        .btn-grey { background-color: var(--secondary-grey); }
+
+        /* --- COLUMNA DERECHA (Ajustes / Privacidad) --- */
+        .settings-panel {
+            display: flex; flex-direction: column; gap: 30px;
+            padding-top: 28px; /* Alinear visualmente con inputs */
+        }
+
+        .select-field {
+            width: 100%; padding: 12px;
+            border: 1px solid #ccc; border-radius: var(--border-radius);
+            font-size: 16px; background-color: #fff; cursor: pointer;
+        }
+
+        /* Toggles iOS Style */
+        .toggle-item {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .toggle-label { font-size: 16px; color: #333; }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background-color: var(--toggle-green); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+
+        /* --- SECCIÓN CONTACTO (Dinámica) --- */
+        .contact-section { margin-top: 40px; border-top: 1px solid #eee; padding-top: 30px; }
+        .section-subtitle { font-size: 20px; font-weight: 500; margin-bottom: 20px; }
+
+        .contact-list { display: flex; flex-direction: column; gap: 15px; max-width: 800px; }
+
+        .contact-row {
+            display: flex; gap: 15px; align-items: flex-end;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .col-type { width: 200px; flex-shrink: 0; }
+        .col-input { flex-grow: 1; }
+        
+        /* Select personalizado con icono */
+        .icon-select-wrapper {
+            display: flex; align-items: center;
+            border: 1px solid #ccc; border-radius: var(--border-radius);
+            padding: 0 10px; height: 48px; background: #fff;
+        }
+        .contact-select {
+            border: none; outline: none; width: 100%;
+            font-size: 16px; color: #333; margin-left: 8px; background: transparent; cursor: pointer;
+        }
+
+        /* Botones + / - */
+        .btn-action {
+            width: 48px; height: 48px;
+            border-radius: 8px; border: none;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; cursor: pointer; color: #fff;
+            transition: background 0.2s;
+        }
+        .btn-add { background-color: #89CFF0; }
+        .btn-add:hover { background-color: var(--primary-blue); }
+        .btn-remove { background-color: #ffcdd2; color: #c62828; }
+        .btn-remove:hover { background-color: #ef9a9a; }
+
+        /* Botón Guardar */
+        .save-container { margin-top: 40px; display: flex; justify-content: flex-end; }
+        .btn-save {
+            background-color: var(--primary-blue); color: white;
+            padding: 12px 40px; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+        }
+        .btn-save:hover { opacity: 0.9; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .edit-grid { grid-template-columns: 1fr; gap: 40px; }
+            .contact-row { flex-wrap: wrap; }
+            .col-type { width: 100%; }
+            .save-container { justify-content: center; }
+            .btn-save { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-background">
+        <div class="header-container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="./assets/icon.png" style="height: 30px;">
+                    <span class="logo-text">DigiCurva</span>
+                </div>
+                <div class="nav-menu">
+                    <ion-icon name="home-outline" style="font-size: 18px; color: #fff;"></ion-icon>
+                    <span>Ofertas</span>
+                    <span>Nuevo</span>
+                    <span>Mas vendido</span>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar">
+                    <ion-icon name="search-outline" style="color: #333;"></ion-icon>
+                </div>
+                <div class="user-menu">
+                    <ion-icon name="heart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
+                    <ion-icon name="cart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
+                    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
+                            <span style="font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Naomi Ruiz</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="page-header">
+            <h1 class="page-title">Editar Perfil</h1>
+        </div>
+
+        <form id="profileForm" onsubmit="handleSave(event)">
+            <div class="edit-grid">
+                
+                <div class="form-section">
+                    
+                    <div class="row-2-col">
+                        <div class="input-group">
+                            <label class="label">Nombre(s)</label>
+                            <input type="text" class="input-field" value="Naomi">
+                        </div>
+                        <div class="input-group">
+                            <label class="label">Apellido(s)</label>
+                            <input type="text" class="input-field" value="Ruiz">
+                        </div>
+                    </div>
+
+                    <div class="profile-photo-section">
+                        <label class="label">Foto De Perfil</label>
+                        <div class="avatar-container">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="avatar-preview" id="preview-avatar">
+                        </div>
+                        <div class="photo-actions">
+                            <button type="button" class="btn-circle btn-blue" title="Tomar foto"><ion-icon name="camera-outline"></ion-icon></button>
+                            <button type="button" class="btn-circle btn-grey" title="Subir archivo"><ion-icon name="document-text-outline"></ion-icon></button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="label">Descripción del perfil</label>
+                        <textarea class="input-field" placeholder="Escribe algo sobre ti...">Lorem ipsum dolor sit amet, consectetur adipiscing elit...</textarea>
+                    </div>
+
+                </div>
+
+                <div class="settings-panel">
+                    
+                    <div class="input-group">
+                        <label class="label">Tipo de perfil</label>
+                        <select class="select-field">
+                            <option value="public">Público</option>
+                            <option value="private">Privado</option>
+                        </select>
+                    </div>
+
+                    <div class="toggle-item">
+                        <span class="toggle-label">Mostrar Acerca de mi</span>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <span class="toggle-label">Mostrar reseñas</span>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-item">
+                        <span class="toggle-label">Mostrar info. de contacto</span>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="contact-section">
+                <h2 class="section-subtitle">Como Contactar Conmigo</h2>
+                
+                <div id="contact-list-container" class="contact-list">
+                    <div class="contact-row">
+                        <div class="input-group col-type">
+                            <label class="label">Tipo de contacto</label>
+                            <div class="icon-select-wrapper">
+                                <ion-icon name="logo-whatsapp" style="color: #25D366; font-size: 20px;"></ion-icon>
+                                <select class="contact-select" onchange="updateIcon(this)">
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="phone">Teléfono</option>
+                                    <option value="email">Email</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group col-input">
+                            <label class="label">Contacto</label>
+                            <input type="text" class="input-field" placeholder="Número o enlace">
+                        </div>
+                        <div style="padding-bottom: 2px;">
+                            <button type="button" class="btn-action btn-remove" onclick="removeRow(this)">-</button>
+                        </div>
+                        <div style="padding-bottom: 2px;">
+                            <button type="button" class="btn-action btn-add" onclick="addRow()">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="save-container">
+                <button type="submit" class="btn-save">Guardar Cambios</button>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        // --- LÓGICA DE CONTACTO ---
+
+        function addRow() {
+            const container = document.getElementById('contact-list-container');
+            
+            // Crear el nodo HTML
+            const newRow = document.createElement('div');
+            newRow.className = 'contact-row';
+            newRow.innerHTML = `
+                <div class="input-group col-type">
+                    <label class="label">Tipo de contacto</label>
+                    <div class="icon-select-wrapper">
+                        <ion-icon name="logo-whatsapp" style="color: #25D366; font-size: 20px;"></ion-icon>
+                        <select class="contact-select" onchange="updateIcon(this)">
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="phone">Teléfono</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group col-input">
+                    <label class="label">Contacto</label>
+                    <input type="text" class="input-field" placeholder="Número o enlace">
+                </div>
+                <div style="padding-bottom: 2px;">
+                    <button type="button" class="btn-action btn-remove" onclick="removeRow(this)">-</button>
+                </div>
+                <div style="padding-bottom: 2px;">
+                    <button type="button" class="btn-action btn-add" onclick="addRow()">+</button>
+                </div>
+            `;
+            
+            container.appendChild(newRow);
+        }
+
+        function removeRow(btn) {
+            const container = document.getElementById('contact-list-container');
+            const row = btn.closest('.contact-row');
+            
+            // Validar que quede al menos 1
+            if (container.children.length > 1) {
+                row.remove();
+            } else {
+                // Opcional: limpiar inputs si es el último
+                const inputs = row.querySelectorAll('input');
+                inputs.forEach(input => input.value = '');
+            }
+        }
+
+        function updateIcon(select) {
+            const wrapper = select.parentElement;
+            const icon = wrapper.querySelector('ion-icon');
+            const val = select.value;
+
+            if(val === 'whatsapp') {
+                icon.setAttribute('name', 'logo-whatsapp');
+                icon.style.color = '#25D366';
+            } else if (val === 'phone') {
+                icon.setAttribute('name', 'call-outline');
+                icon.style.color = '#2196F3';
+            } else if (val === 'email') {
+                icon.setAttribute('name', 'mail-outline');
+                icon.style.color = '#EA4335';
+            }
+        }
+
+        function handleSave(e) {
+            e.preventDefault();
+            // Aquí iría la lógica de fetch al backend
+            alert("Guardando perfil... (Simulación)");
+            setTimeout(() => {
+                window.location.href = 'perfil.html';
+            }, 1000);
+        }
+    </script>
+
+</body>
+</html>

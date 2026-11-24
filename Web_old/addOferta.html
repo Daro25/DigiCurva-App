@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Producto - DigiCurva</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIABLES Y RESET --- */
+        :root {
+            --primary-blue: #2196F3;
+            --price-green: #4CAF50;
+            --bg-body: #fff;
+            --header-bg-color: rgba(56, 189, 248, 0.4);
+            --max-width: 1200px;
+            --border-radius: 8px;
+            --btn-grey: #e0e0e0;
+            --btn-red: #ff8a80; /* Tono rojizo pastel de la imagen */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-body); color: #333; padding-bottom: 80px; }
+
+        /* --- HEADER (Reutilizado) --- */
+        .header-background {
+            background-image: url('assets/fondoHome.jpg');
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-container { background-color: var(--header-bg-color); width: 100%; padding: 10px 0; }
+        .header-content {
+            max-width: var(--max-width); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-weight: 900; font-size: 24px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .nav-menu { display: flex; gap: 20px; font-size: 14px; font-weight: 500; color: #fff; }
+        .nav-menu span { cursor: pointer; display: flex; align-items: center; gap: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .search-bar { display: flex; align-items: center; background: #fff; border-radius: 4px; padding: 5px 10px; width: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .search-bar input { border: none; outline: none; flex: 1; font-size: 14px; background: transparent; }
+        .user-menu { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #fff; }
+        .user-mini-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- CABECERA DE ACCIÓN --- */
+        .action-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px;
+        }
+        .page-title { font-size: 32px; font-weight: 500; color: #000; }
+        
+        .action-buttons { display: flex; gap: 15px; }
+        .btn-top {
+            padding: 10px 30px; border: none; border-radius: 4px;
+            font-size: 14px; font-weight: 500; cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-accept { background-color: var(--btn-grey); color: #000; }
+        .btn-cancel { background-color: var(--btn-red); color: #000; }
+        .btn-accept:hover { background-color: #d5d5d5; }
+        .btn-cancel:hover { opacity: 0.9; }
+
+        /* --- SECCIÓN COMPARATIVA (PREVIEW) --- */
+        .preview-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+            margin-bottom: 50px;
+        }
+        
+        .preview-col h3 {
+            font-size: 20px; font-weight: 400; color: #888; margin-bottom: 15px;
+        }
+
+        .product-preview-card {
+            display: flex; gap: 15px; align-items: center;
+        }
+        .product-img {
+            width: 80px; height: 80px; object-fit: contain;
+            border: 1px solid #eee; border-radius: 8px; padding: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .product-info { display: flex; flex-direction: column; }
+        .product-name { font-size: 18px; font-weight: 700; color: #000; margin-bottom: 5px; }
+        
+        .price-original { font-size: 20px; color: #333; font-weight: 400; }
+        .price-discount { font-size: 20px; color: var(--price-green); font-weight: 500; }
+        .discount-badge { font-size: 16px; color: #888; margin-left: 5px; font-weight: 400; }
+
+        /* --- SECCIÓN FORMULARIO OFERTA --- */
+        .offer-form-section { margin-top: 20px; }
+        .section-title { font-size: 26px; font-weight: 500; margin-bottom: 25px; color: #000; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columnas para inputs */
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .label { font-size: 16px; color: #000; font-weight: 400; }
+        
+        /* Inputs Estilizados */
+        .input-wrapper {
+            position: relative; display: flex; align-items: center;
+        }
+        .input-field {
+            width: 100%; padding: 12px 10px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; background: #f9f9f9;
+        }
+        .input-suffix {
+            position: absolute; right: 15px; color: #666; font-weight: 500; pointer-events: none;
+        }
+
+        /* Fechas */
+        .date-input {
+            width: 100%; padding: 12px 10px;
+            border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; background: #f9f9f9;
+            color: #333; font-family: inherit;
+        }
+
+        /* Comentario (ancho completo) */
+        .full-width { grid-column: 1 / -1; }
+        textarea.input-field {
+            resize: none; height: 150px; background: #f9f9f9;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .preview-grid { grid-template-columns: 1fr; gap: 20px; }
+            .form-grid { grid-template-columns: 1fr; gap: 20px; }
+            .action-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .action-buttons { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-background">
+        <div class="header-container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="./assets/icon.png" style="height: 30px;">
+                    <span class="logo-text">DigiCurva</span>
+                </div>
+                <div class="nav-menu">
+                    <ion-icon name="home-outline" style="font-size: 18px; color: #fff;"></ion-icon>
+                    <span>Ofertas</span>
+                    <span>Nuevo</span>
+                    <span>Mas vendido</span>
+                    <span>Categorías <ion-icon name="caret-down-outline" style="font-size: 10px;"></ion-icon></span>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar">
+                    <ion-icon name="search-outline" style="color: #333;"></ion-icon>
+                </div>
+                <div class="user-menu">
+                    <ion-icon name="heart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
+                    <ion-icon name="cart-outline" style="font-size: 22px; cursor: pointer;"></ion-icon>
+                    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="user-mini-avatar">
+                        <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
+                            <span style="font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Naomi Ruiz</span>
+                            <span style="font-size: 11px; color: #eee;">Ajustes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="action-header">
+            <h1 class="page-title">Detalles del producto</h1>
+            <div class="action-buttons">
+                <button class="btn-top btn-accept" onclick="saveOffer()">Aceptar</button>
+                <button class="btn-top btn-cancel" onclick="cancelEdit()">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="preview-grid">
+            <div class="preview-col">
+                <h3>Actual</h3>
+                <div class="product-preview-card">
+                    <img src="https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063688?$684_547_PNG$" class="product-img">
+                    <div class="product-info">
+                        <span class="product-name">Samsung Galaxy A36 5G</span>
+                        <span class="price-original" id="displayOriginalPrice">$4,500.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-col">
+                <h3>Con oferta</h3>
+                <div class="product-preview-card">
+                    <img src="https://images.samsung.com/is/image/samsung/p6pim/mx/sm-a546elgaltm/gallery/mx-galaxy-a54-5g-sm-a546-sm-a546elgaltm-536063688?$684_547_PNG$" class="product-img">
+                    <div class="product-info">
+                        <span class="product-name">Samsung Galaxy A36 5G</span>
+                        <div>
+                            <span class="price-discount" id="displayDiscountPrice">$4,500.00</span>
+                            <span class="discount-badge" id="displayDiscountPercent"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="offer-form-section">
+            <h2 class="section-title">Añadir oferta</h2>
+            
+            <div class="form-grid">
+                
+                <div class="input-group">
+                    <label class="label">Porcentaje De Descuento</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="inputPercent" class="input-field" placeholder="0" min="0" max="100" oninput="calculateFromPercent()">
+                        <span class="input-suffix">%</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Precio Con Descuento</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="inputPrice" class="input-field" placeholder="$0.00" oninput="calculateFromPrice()">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Fecha De Inicio</label>
+                    <input type="date" class="date-input" value="2026-02-11">
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Fecha De Finalización</label>
+                    <input type="date" class="date-input" value="2026-02-11">
+                </div>
+
+                <div></div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- LÓGICA DE CALCULADORA ---
+        const originalPrice = 4500.00; // Precio base simulado
+
+        function calculateFromPercent() {
+            const percentInput = document.getElementById('inputPercent');
+            const priceInput = document.getElementById('inputPrice');
+            
+            let percent = parseFloat(percentInput.value);
+            if (isNaN(percent)) percent = 0;
+            if (percent > 100) percent = 100;
+
+            // Calcular nuevo precio
+            const discountAmount = (originalPrice * percent) / 100;
+            const newPrice = originalPrice - discountAmount;
+
+            // Actualizar input de precio (formato moneda)
+            priceInput.value = formatCurrency(newPrice);
+
+            updatePreview(newPrice, percent);
+        }
+
+        function calculateFromPrice() {
+            const priceInput = document.getElementById('inputPrice');
+            const percentInput = document.getElementById('inputPercent');
+
+            // Limpiar el string de moneda para obtener el numero
+            let priceRaw = priceInput.value.replace(/[^0-9.]/g, '');
+            let newPrice = parseFloat(priceRaw);
+            
+            if (isNaN(newPrice)) newPrice = 0;
+            if (newPrice > originalPrice) newPrice = originalPrice; // No subir precio aqui
+
+            // Calcular porcentaje inverso
+            let discountAmount = originalPrice - newPrice;
+            let percent = (discountAmount / originalPrice) * 100;
+
+            // Actualizar input de porcentaje (con 1 decimal si es necesario)
+            percentInput.value = Math.round(percent * 10) / 10; // Redondear a 1 decimal
+
+            updatePreview(newPrice, percent);
+        }
+
+        function updatePreview(newPrice, percent) {
+            const displayPrice = document.getElementById('displayDiscountPrice');
+            const displayBadge = document.getElementById('displayDiscountPercent');
+
+            displayPrice.textContent = formatCurrency(newPrice);
+            
+            if (percent > 0) {
+                displayBadge.textContent = `(-${Math.round(percent)}%)`;
+                displayPrice.style.color = '#4CAF50'; // Verde
+            } else {
+                displayBadge.textContent = '';
+                displayPrice.style.color = '#333'; // Negro si no hay descuento
+            }
+        }
+
+        function formatCurrency(value) {
+            return "$" + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // Navegación
+        function saveOffer() {
+            alert("Oferta aplicada correctamente.");
+            // window.location.href = 'perfil.html';
+        }
+
+        function cancelEdit() {
+            if(confirm("¿Seguro que quieres cancelar?")) {
+                window.location.href = 'perfil.html';
+            }
+        }
+
+        // Init
+        window.onload = () => {
+            // Inicializar valores
+            document.getElementById('inputPrice').value = formatCurrency(originalPrice);
+        };
+
+    </script>
+</body>
+</html>

@@ -41,7 +41,7 @@
         }
         .logo-img { width: 24px; height: 24px; } /* Ajuste para imagen dentro del icono */
         .logo-text {
-            font-size: 24px; fontWeight: 900; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            font-size: 24px; font-weight: 900; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
         .nav-link { font-size: 16px; font-weight: 500; color: #333; text-decoration: none; cursor: pointer; }
 
@@ -241,7 +241,7 @@
     }
 
     var configures = await cargarConfiguracion();
-        const URL_SUBIR_IMAGEN = configures.dominio + '/subirDrive';//'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
+        const URL_SUBIR_IMAGEN = configures.base_url;//'https://ljusstudie.site/SubirImagenBucker/subirImage.php';
         const URL_CREAR_ANUNCIO = configures.base_url + 'publicar_anuncio.php'//'https://ljusstudie.site/DigiCurvaServer/publicar_anuncio.php';
         const URL_PROCESAR_PAGO = 'https://ljusstudie.site/paypal/crear_link_paypal.php';
 

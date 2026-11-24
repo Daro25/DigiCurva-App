@@ -468,7 +468,7 @@
         async function iniciar() {
             configures = await cargarConfiguracion();
             API_BASE_URL = configures.base_url || API_BASE_URL;
-                URL_SUBIR_IMAGEN = configures.dominio + '/subirDrive' || URL_SUBIR_IMAGEN;
+                URL_SUBIR_IMAGEN = configures.base_url || URL_SUBIR_IMAGEN;
             try {
                     const categorias = await fetch(`${API_BASE_URL}consultar_categorias.php`);
                     const cateSelect = document.getElementById('categoria');
