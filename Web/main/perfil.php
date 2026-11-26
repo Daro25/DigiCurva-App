@@ -374,8 +374,8 @@
                     <div class="radar" id="radar"></div>
                 </div>
                 <div class="profile-info-overlay">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" class="big-avatar" alt="Profile" id="user-avatar2">
-                    <div class="profile-name-overlay" id="user-name2">user</div>
+                    <img src="<?= $perfil['foto_perfil_url']; ?>" class="big-avatar" alt="Profile" id="user-avatar2">
+                    <div class="profile-name-overlay" id="user-name2"><?= $perfil['nombre']; ?></div>
                 </div>
             </div>
 
@@ -415,8 +415,8 @@
                     <a href="#" class="link-blue">Mas Información</a>
                 </div>
                 <div style="font-size: 12px; font-weight: 500;">Ingresos</div>
-                <div class="saldo-amount" id="user-saldo">$4,500.00</div>
-                <div class="saldo-amount" id="user-coints">0 Coints</div>
+                <div class="saldo-amount" id="user-saldo">$<?= $perfil['saldo']; ?></div>
+                <div class="saldo-amount" id="user-coints"><? $perfil['coints']; ?></div>
 
                 <div class="plan-row">
                     <span class="plan-badge">Ingresar Saldo a favor</span>
@@ -439,11 +439,11 @@
                 <div class="contact-list">
                     <div class="contact-item">
                         <ion-icon name="call" class="contact-icon" style="color: #2196F3;"></ion-icon>
-                        <span id="user-phone">XXX XXX XXXX</span>
+                        <span id="user-phone"><?= $perfil['telefono'] ? $perfil['telefono']: 'XXX XXX XXXX' ?></span>
                     </div>
                     <div class="contact-item">
                         <ion-icon name="mail" class="contact-icon" style="color: #EA4335;"></ion-icon>
-                        <span id="user-email" style="font-size: 13px;" >Abcdefg@Hijkl.Com</span>
+                        <span id="user-email" style="font-size: 13px;" ><?= $perfil['correo'] ?></span>
                     </div>
                 </div>
             </div>
@@ -885,9 +885,6 @@
         }
 
         // --- 5. EVENTOS ---
-        function handleAddToCart(title) {
-            alert(`Agregado: ${title}`);
-        }
         function navigateTo(path) {
             console.log("Navegando a:", path);
             window.location.href = path; // O la lógica que prefieras

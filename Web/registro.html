@@ -96,7 +96,7 @@
         }
 
         .card {
-            background-color: rgba(255, 255, 255, 0.85);
+            background-color: transparent; /*rgba(255, 255, 255, 0.85);*/
             border-radius: 20px;
             padding: 40px;
             width: 100%;
@@ -274,91 +274,432 @@
             <div class="scroll-content">
                 <div class="card">
                     
-                    <div class="card-header">
-                        <h2 class="card-title">Cuéntenos sobre usted</h2>
+                    <!--div class="card-header">
                         <button class="arrow-button" onclick="handleSubmit()">
                             <ion-icon name="arrow-forward" style="font-size: 28px; color: #000;"></ion-icon>
                         </button>
-                    </div>
+                    </div-->
+<style>
+  .wizard-viewport {
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    margin: 0 auto;
+  }
 
-                    <form id="registroForm" onsubmit="event.preventDefault(); handleSubmit();">
-                        <div class="form-grid">
-                            
-                            <div class="column">
-                                <div class="input-group">
-                                    <label class="label">Nombre(s)</label>
-                                    <input type="text" id="nombres" class="input">
-                                </div>
-                                    <div class="input-group">
-                                        <label class="label">Apellido Paterno</label>
-                                        <input type="text" id="apellidoP" class="input" maxlength="30">
-                                    </div>
-                                    <div class="input-group">
-                                        <label class="label">Apellido Materno</label>
-                                        <input type="text" id="apellidoM" class="input" maxlength="30">
-                                    </div>
-                                <div class="input-group">
-                                    <label class="label">Correo electrónico</label>
-                                    <input type="email" id="email" class="input">
-                                </div>
-                                <div class="input-group">
-                                    <label class="label">Número de teléfono</label>
-                                    <input type="tel" id="telefono" class="input">
-                                </div>
-                            </div>
+  .wizard-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 
-                            <div class="column">
-                                
-                                <div class="row-inputs">
-                                    <div class="input-group" style="flex: 3;">
-                                        <label class="label">Nombre de calle</label>
-                                        <input type="text" id="calle" class="input">
-                                    </div>
-                                    <div class="input-group" style="flex: 1;">
-                                        <label class="label"># de casa</label>
-                                        <input type="text" id="numeroCasa" class="input">
-                                    </div>
-                                </div>
+  .wizard-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 34px;
+    margin-bottom: 14px;
+  }
 
-                                <div class="input-group">
-                                    <label class="label">Localidad</label>
-                                    <input type="text" id="localidad" class="input">
-                                </div>
+  .btn-back-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
 
-                                <div class="input-group">
-                                    <label class="label">Contraseña</label>
-                                    <input type="password" id="contrasena" class="input" autocomplete="new-password">
-                                </div>
+  .btn-back-top:hover {
+    background-color: #f3f4f6;
+  }
 
-                                <label class="label">Foto (opcional)</label>
-                                <div class="photo-section">
-                                    
-                                    <div class="photo-placeholder" id="photoPreviewBox">
-                                        <ion-icon name="person-outline" style="font-size: 40px; color: #333;" id="defaultIcon"></ion-icon>
-                                        <img src="" id="previewImg" class="photo-preview" style="display: none;">
-                                        <div id="uploadSpinner" class="spinner" style="display: none;"></div>
-                                    </div>
+  .step-indicator {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-left: auto;
+  }
 
-                                    <div class="photo-actions">
-                                        <button type="button" class="circle-btn btn-camera" onclick="triggerFile('camera')">
-                                            <ion-icon name="camera-outline" style="font-size: 24px;"></ion-icon>
-                                        </button>
+  .wizard-step {
+    display: none;
+  }
 
-                                        <button type="button" class="circle-btn btn-file" onclick="triggerFile('gallery')">
-                                            <span class="material-icons" style="font-size: 24px;">note_add</span>
-                                        </button>
-                                    </div>
+  .wizard-step.is-active {
+    display: block;
+    animation: fadeStep 0.2s ease;
+  }
 
-                                    <form id="formIMG" enctype="multipart/form-data" hidden>
-                                    <input type="text" id="nombreIMG" name="name" hidden>
-                                    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)" name="image" hidden="true">
-                                    </form>
-                                </div>
+  @keyframes fadeStep {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
-                            </div>
-                        </div>
-                    </form>
+  .step-title {
+    margin: 0 0 6px;
+    font-size: 1.25rem;
+    color: #111827;
+  }
 
+  .step-desc {
+    margin: 0 0 18px;
+    font-size: 0.92rem;
+    color: #4b5563;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
+  }
+
+  .label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 5px;
+  }
+
+  .input {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+  }
+
+  .input:focus {
+    border-color: #2563eb;
+  }
+
+  .row-inputs {
+    display: flex;
+    gap: 12px;
+  }
+
+  .field-error {
+    color: #dc2626;
+    font-size: 0.82rem;
+    margin-top: 4px;
+    min-height: 16px;
+  }
+
+  .photo-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .photo-placeholder {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .photo-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .circle-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #e5e7eb;
+    color: #111827;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .wizard-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+  }
+
+  .btn-primary:hover {
+    background: #1d4ed8;
+  }
+
+  .btn-secondary {
+    background: #e5e7eb;
+    color: #1f2937;
+  }
+
+  .btn-secondary:hover {
+    background: #d1d5db;
+  }
+</style>
+
+<div class="wizard-viewport">
+  <form id="registroForm" enctype="multipart/form-data" onsubmit="event.preventDefault(); handleSubmit();" novalidate>
+    <div class="wizard-card">
+      <!-- Barra superior: botón Anterior en pasos secundarios -->
+      <div class="wizard-top-bar">
+        <button type="button" id="btnBackTop" class="btn-back-top" onclick="goBackStep()" style="display: none;">
+          ← Anterior
+        </button>
+        <span id="stepIndicator" class="step-indicator">Paso 1 de 4</span>
+      </div>
+
+      <!-- PASO 1: Datos obligatorios -->
+      <div class="wizard-step is-active" data-step="1">
+        <h3 class="step-title">Crea tu cuenta</h3>
+        <p class="step-desc">Ingresa tu nombre, apellidos y correo para continuar.</p>
+
+        <div class="input-group">
+          <label class="label" for="nombres">Nombre(s) *</label>
+          <input type="text" id="nombres" class="input" required>
+          <span class="field-error" id="err-nombres"></span>
+        </div>
+
+        <div class="row-inputs">
+          <div class="input-group" style="flex: 1;">
+            <label class="label" for="apellidoP">Apellido Paterno *</label>
+            <input type="text" id="apellidoP" class="input" maxlength="30" required>
+            <span class="field-error" id="err-apellidoP"></span>
+          </div>
+
+          <div class="input-group" style="flex: 1;">
+            <label class="label" for="apellidoM">Apellido Materno *</label>
+            <input type="text" id="apellidoM" class="input" maxlength="30" required>
+            <span class="field-error" id="err-apellidoM"></span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="label" for="email">Correo electrónico *</label>
+          <input type="email" id="email" class="input" required>
+          <span class="field-error" id="err-email"></span>
+        </div>
+
+        <div class="input-group">
+          <label class="label" for="contrasena">Contraseña *</label>
+          <input type="password" id="contrasena" class="input" autocomplete="new-password" required>
+          <span class="field-error" id="err-contrasena"></span>
+        </div>
+
+        <div class="wizard-actions">
+          <button type="button" class="btn-primary" onclick="validateAndNextStep1()">Siguiente</button>
+        </div>
+      </div>
+
+      <!-- PASO 2: Foto de perfil (Opcional) -->
+      <div class="wizard-step" data-step="2">
+        <h3 class="step-title">¿Quieres agregar una foto de perfil?</h3>
+        <p class="step-desc">Es opcional; puedes subirla ahora o continuar sin foto.</p>
+
+        <div class="photo-section">
+          <div class="photo-placeholder" id="photoPreviewBox">
+            <ion-icon name="person-outline" style="font-size: 40px; color: #333;" id="defaultIcon"></ion-icon>
+            <img src="" id="previewImg" class="photo-preview" style="display: none;" alt="Vista previa de perfil">
+            <div id="uploadSpinner" class="spinner" style="display: none;"></div>
+          </div>
+
+          <div class="photo-actions">
+            <button type="button" class="circle-btn btn-camera" onclick="triggerFile('camera')" title="Tomar foto">
+              <ion-icon name="camera-outline" style="font-size: 24px;"></ion-icon>
+            </button>
+
+            <button type="button" class="circle-btn btn-file" onclick="triggerFile('gallery')" title="Elegir archivo">
+              <span class="material-icons" style="font-size: 24px;">note_add</span>
+            </button>
+          </div>
+        </div>
+
+        <input type="text" id="nombreIMG" name="name" hidden>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelected(this)" name="image" hidden>
+
+        <div class="wizard-actions">
+          <button type="button" class="btn-secondary" onclick="skipPhotoStep()">Omitir</button>
+          <button type="button" class="btn-primary" onclick="goToStep(3)">Siguiente</button>
+        </div>
+      </div>
+
+      <!-- PASO 3: Decisión sobre datos de contacto y dirección -->
+      <div class="wizard-step" data-step="3">
+        <h3 class="step-title">Datos de contacto y dirección</h3>
+        <p class="step-desc">¿Deseas agregar tus datos de contacto y dirección ahora o prefieres omitir este paso?</p>
+
+        <div class="wizard-actions" style="justify-content: flex-start;">
+          <button type="button" class="btn-primary" onclick="goToStep(4)">Agregar datos ahora</button>
+          <button type="button" class="btn-secondary" onclick="handleSubmit()">Omitir y finalizar</button>
+        </div>
+      </div>
+
+      <!-- PASO 4: Formulario condicional de contacto y dirección -->
+      <div class="wizard-step" data-step="4">
+        <h3 class="step-title">Contacto y dirección</h3>
+        <p class="step-desc">Completa los datos que desees compartir.</p>
+
+        <div class="input-group">
+          <label class="label" for="telefono">Número de teléfono</label>
+          <input type="tel" id="telefono" class="input">
+        </div>
+
+        <div class="row-inputs">
+          <div class="input-group" style="flex: 3;">
+            <label class="label" for="calle">Nombre de calle</label>
+            <input type="text" id="calle" class="input">
+          </div>
+          <div class="input-group" style="flex: 1;">
+            <label class="label" for="numeroCasa"># de casa</label>
+            <input type="text" id="numeroCasa" class="input">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="label" for="localidad">Localidad</label>
+          <input type="text" id="localidad" class="input">
+        </div>
+
+        <div class="wizard-actions">
+          <button type="submit" class="btn-primary">Completar registro</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  let currentStep = 1;
+  const stepHistory = [1];
+
+  function renderStep(stepNumber) {
+    currentStep = stepNumber;
+
+    document.querySelectorAll('.wizard-step').forEach((stepEl) => {
+      stepEl.classList.toggle('is-active', Number(stepEl.dataset.step) === stepNumber);
+    });
+
+    const btnBackTop = document.getElementById('btnBackTop');
+    btnBackTop.style.display = stepNumber > 1 ? 'inline-flex' : 'none';
+
+    const indicator = document.getElementById('stepIndicator');
+    indicator.textContent = `Paso ${stepNumber} de 4`;
+  }
+
+  function goToStep(stepNumber) {
+    if (stepHistory[stepHistory.length - 1] !== stepNumber) {
+      stepHistory.push(stepNumber);
+    }
+    renderStep(stepNumber);
+  }
+
+  function goBackStep() {
+    if (stepHistory.length > 1) {
+      stepHistory.pop();
+      const previousStep = stepHistory[stepHistory.length - 1];
+      renderStep(previousStep);
+    } else if (currentStep > 1) {
+      renderStep(currentStep - 1);
+    }
+  }
+
+  function setError(id, message) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = message;
+  }
+
+  function validateAndNextStep1() {
+    const nombres = document.getElementById('nombres').value.trim();
+    const apellidoP = document.getElementById('apellidoP').value.trim();
+    const apellidoM = document.getElementById('apellidoM').value.trim();
+    const emailInput = document.getElementById('email');
+    const email = emailInput.value.trim();
+    const contrasena = document.getElementById('contrasena').value;
+
+    setError('err-nombres', '');
+    setError('err-apellidoP', '');
+    setError('err-apellidoM', '');
+    setError('err-email', '');
+    setError('err-contrasena', '');
+
+    let valid = true;
+
+    if (!nombres) {
+      setError('err-nombres', 'El nombre es obligatorio.');
+      valid = false;
+    }
+    if (!apellidoP) {
+      setError('err-apellidoP', 'El apellido paterno es obligatorio.');
+      valid = false;
+    }
+    if (!apellidoM) {
+      setError('err-apellidoM', 'El apellido materno es obligatorio.');
+      valid = false;
+    }
+    if (!email || !emailInput.checkValidity()) {
+      setError('err-email', 'Ingresa un correo electrónico válido.');
+      valid = false;
+    }
+    if (!contrasena || contrasena.length < 6) {
+      setError('err-contrasena', 'Ingresa una contraseña de al menos 6 caracteres.');
+      valid = false;
+    }
+
+    if (valid) {
+      goToStep(2);
+    }
+  }
+
+  function skipPhotoStep() {
+    const fileInput = document.getElementById('fileInput');
+    const previewImg = document.getElementById('previewImg');
+    const defaultIcon = document.getElementById('defaultIcon');
+
+    if (fileInput) fileInput.value = '';
+    if (previewImg) {
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+    }
+    if (defaultIcon) defaultIcon.style.display = 'block';
+
+    goToStep(3);
+  }
+</script>
                 </div>
             </div>
 
@@ -367,13 +708,14 @@
 
     <script>
     async function cargarConfiguracion() {
-        const respuesta = await fetch('config.json');
+        const respuesta = await fetch('config.json?v=1');
         const config = await respuesta.json();
         return config;
     }
     var URL_SUBIR_IMAGEN = 'http://xampp.local/subirDrive';
     var API_BASE_URL = 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
     var configures = [];
+    inicio();
 async function inicio(params) {
     configures = await cargarConfiguracion();
     API_BASE_URL = configures.base_url || API_BASE_URL;
@@ -411,7 +753,7 @@ async function inicio(params) {
 
         // 2. Función subir imagen a PHP (Replicando uploadToPHP)
         async function uploadToPHP() {
-            const formulario = document.getElementById('formIMG');
+            const formulario = document.getElementById('registroForm');
             console.log("--- PASO 1: SUBIR FOTO ---");
 
             // Generar nombre
@@ -421,14 +763,14 @@ async function inicio(params) {
             
             document.getElementById('nombreIMG').value = filename;
             var formData = new FormData(formulario);
-            const response = await fetch(`${URL_SUBIR_IMAGEN}/subirImageAlternativo.php`, { method: 'POST', body: formData });
+            const response = await fetch(`${URL_SUBIR_IMAGEN}subirImageAlternativo.php`, { method: 'POST', body: formData });
             const json = await response.json();
 
             if (!response.ok || !json.url) {
                 return null;
             }
             console.log("URL Recibida:", json.url);
-            return URL_SUBIR_IMAGEN + '/' + json.url;
+            return json.url;
         }
 
         // Helper UI Spinner
@@ -462,12 +804,13 @@ async function inicio(params) {
             };
 
             // B. Validación
-            if (!formData.nombres || !formData.email || !formData.contrasena || !formData.telefono || 
-                !formData.calle || !formData.numeroCasa || !formData.localidad) {
+            if (!formData.nombres || !formData.email || !formData.contrasena || !formData.apellidoM || !formData.apellidoP) {
                 alert("Complete campos obligatorios");
                 return;
             }
-
+            //-----------------Solicita el permiso-----------------------------
+            const permiso = await fetch(API_BASE_URL+'solicitar_token_vicitante.php');
+            if(permiso.ok) console.log("te doy permiso de registrarte en mi página");
             // C. Subir foto si existe (Primero subimos foto, luego registramos)
             let finalImageUrl = "";
             if (photoFile) {

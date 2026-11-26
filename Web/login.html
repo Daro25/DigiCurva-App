@@ -294,7 +294,7 @@
 
     <script>
         async function cargarConfiguracion() {
-        const respuesta = await fetch('config.json');
+        const respuesta = await fetch('config.json?v=1.0');
         const config = await respuesta.json();
         return config;
     }

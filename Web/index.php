@@ -8,7 +8,7 @@ function imprime ($value) : string {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); // técnica maldita anti hackers "bloqueo XXS"
 }
 // 1. Leer y decodificar el archivo JSON desde el servidor
-$rutaConfig = 'config.json';
+$rutaConfig = 'config.json?v=1.0';
 $configures = [];
 
 if (file_exists($rutaConfig)) {
@@ -19,6 +19,37 @@ if (file_exists($rutaConfig)) {
 // 2. Definir la URL base con un valor por defecto si no existe en el JSON
 $defaultUrl = 'http://localhost:80/DigiCurvaServer/'; // 'https://ljusstudie.site/DigiCurvaServer';
 $apiBaseUrl = !empty($configures['base_url']) ? $configures['base_url'] : $defaultUrl;
+// URL de la API
+$apiUrlperfil = $apiBaseUrl . 'obtener_perfil.php';
+$cookieName = 'token'; // Cambia esto a tu nombre de cookie
+$cookieValue = $_COOKIE[$cookieName];
+// Configuración de curl
+$ch = curl_init();
+
+// Establecer la URL
+curl_setopt($ch, CURLOPT_URL, $apiUrlperfil);
+
+// Configurar curl para devolver el contenido del servidor en lugar de imprimirlo
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+// Configurar curl para enviar la cookie
+curl_setopt($ch, CURLOPT_COOKIE, $cookieName . '=' . urlencode($cookieValue));
+// Ejecutar la petición
+$response_perfil = curl_exec($ch);
+// Verificar si la petición fue exitosa
+if ($response_perfil === false) {
+    echo 'Error al realizar la petición HTTP';
+    exit;
+}
+// Parsear la respuesta como JSON
+$data_perfil = json_decode($response_perfil, true);
+// Verificar si la respuesta es un array asociativo (true)
+if (is_array($data_perfil)) {
+    // Acceder a los datos del JSON
+    $perfil = $data_perfil['perfil'];
+    $solicitudes_compra = $data_perfil['solicitudes'];
+} else {
+    echo 'Respuesta no válida como JSON';
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -257,9 +288,9 @@ $apiBaseUrl = !empty($configures['base_url']) ? $configures['base_url'] : $defau
                         </div>
                         <div class="spacer"></div>
                         <div class="user-info animate__animated" id="user-animated">
-                            <img id="user-avatar" src="" class="avatar" onclick="window.location.href='./?page=user'" alt="Avatar">
+                            <img id="user-avatar" src="<?= $perfil['foto_perfil_url']; ?>" class="avatar" onclick="window.location.href='./?page=user'" alt="Avatar">
                             <div class="user-details">
-                                <span class="user-name"><a id="user-name" href="./?page=user">Usuario</a></span>
+                                <span class="user-name"><a id="user-name" href="./?page=user"><?= $perfil['nombre']; ?></a></span>
                                 <span class="user-link">Ajustes</span>
                             </div>
                         </div>
@@ -308,8 +339,8 @@ $apiBaseUrl = !empty($configures['base_url']) ? $configures['base_url'] : $defau
                 case 'anuncio':
                     include './Anuncio.html';
                     break;
-                case 'carro':
-                    # code...
+                case 'carrito':
+                    include './addCart.html';
                     break;
                 case 'search':
                     include './main/search.php';

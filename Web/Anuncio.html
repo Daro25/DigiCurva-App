@@ -426,12 +426,12 @@
             
             document.getElementById('nombreIMG').value = filename;
             var formData = new FormData(formulario);
-            const response = await fetch(`${URL_SUBIR_IMAGEN}/subirImageAlternativo.php`, { method: 'POST', body: formData });
+            const response = await fetch(`${URL_SUBIR_IMAGEN}subirImageAlternativo.php`, { method: 'POST', body: formData });
             const json = await response.json();
 
             if (!response.ok || !json.url) throw new Error(json.error || 'Error subiendo imagen');
             console.log("URL Recibida:", json.url);
-            return URL_SUBIR_IMAGEN + '/' + json.url;
+            return json.url;
         }
 
         // PASO 2
