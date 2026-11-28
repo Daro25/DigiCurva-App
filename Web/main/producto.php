@@ -235,7 +235,7 @@
 
     </div>
     <div class="modal" onclick="exitModal()">
-        <iframe src="addCart.html" id="addCart1" frameborder="0"></iframe>
+        <iframe src="addCart.php" id="addCart1" frameborder="0"></iframe>
     </div>
     <script>
         // --- 1. INICIALIZACIÓN ---
@@ -335,7 +335,7 @@
         function ToCard() {
             const urlParams = new URLSearchParams(window.location.search);
             const param = urlParams.get('product');
-            return `addCart.html?product=${param}`;
+            return `addCart.php?product=${param}&v=1.0`;
         }
         function exitModal() {
             const modal = document.querySelector('.modal');

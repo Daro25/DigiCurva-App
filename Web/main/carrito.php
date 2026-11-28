@@ -13,13 +13,15 @@
         .column-content { width: 100%; max-width: 800px; }
         .section-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
 
-        .cart-item { display: flex; align-items: center; margin-bottom: 20px; position: relative;}
+        .cart-item { display: flex; align-items: center; margin-bottom: 20px; 
+        border-radius: 12px;
+        position: relative; overflow: hidden; border: 2px dashed #b4b4b4; padding: 5px;}
         .item-img-container {
             width: 100px; height: 100px; background: #fff; border-radius: 8px; padding: 5px; margin-right: 20px;
             border: 1px solid #f3f4f6; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .item-img { width: 100%; height: 100%; object-fit: contain; }
-        .item-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .item-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
         .item-price { font-size: 22px; color: #333; }
 
         /* Columna Derecha (Checkout) */
@@ -97,9 +99,9 @@
                         <ion-icon name="add" style="font-size: 24px; color: #555;"></ion-icon>
                     </div>
 
-                    <div class="payment-option" id="opt-coins" onclick="selectPayment('coins')">
+                    <div class="payment-option" id="opt-saldo" onclick="selectPayment('saldo')">
                         <div class="payment-text">
-                            <h4>Usar saldo de cuenta</h4>
+                            <h4>Usar saldo a fovor: $<?= $perfil['saldo']; ?></h4>
                         </div>
                         <div class="radio-outer"><div class="radio-inner"></div></div>
                     </div>
@@ -176,19 +178,6 @@
                 configures = await cargarConfiguracion();
                 API_BASE_URL = configures.base_url || API_BASE_URL;
             try {
-                // A. PERFIL
-                try {
-                    const resPerfil = await fetch(`${API_BASE_URL}obtener_perfil.php`);
-                    if(resPerfil.ok) {
-                        const data = await resPerfil.json();
-                        userProfile = {
-                            nombre: data.perfil?.nombre || 'Usuario',
-                            avatar: data.perfil?.foto_perfil_url || DEFAULT_AVATAR
-                        };
-                        updateHeaderUI();
-                    }
-                } catch (e) { console.warn("Fallo perfil", e); }
-
                 // B. PRODUCTOS
                 try {
                     const resProd = await fetch(`${API_BASE_URL}obtener_carrito.php`);
@@ -203,7 +192,7 @@
                             sku: item.sku || '0000',
                             image: item.imagen_url || 'https://via.placeholder.com/150'
                         })) : [];
-                        if (cartItems.length === 0) {
+                        if (cartItems.length === 0 && false) {
                             // Si MOCK_CART_ITEMS ya es un objeto, úsalo en un array [item]
                             // Si es un array, úsalo directamente. Supongamos que es un objeto:
                             cartItems = Array.isArray(MOCK_CART_ITEMS) ? MOCK_CART_ITEMS : [MOCK_CART_ITEMS];
@@ -280,7 +269,6 @@
                     currency: 'MXN',
                     payment_method: paymentMethod,
                     items: itemIds,
-                    user_id: 'usr_naomi_123'
                 });
 
                 const finalUrl = `${baseUrl}?${params.toString()}`;

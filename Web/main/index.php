@@ -82,6 +82,7 @@
             border: 1px solid #f0f0f0;
             display: flex;
             flex-direction: column;
+            max-width: 200px;
         }
 
         .card-image-container {

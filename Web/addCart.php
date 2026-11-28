@@ -1,3 +1,18 @@
+<?php
+// 1. Leer y decodificar el archivo JSON desde el servidor
+$rutaConfig = 'config.json?v=1.0';
+$configures = [];
+
+if (file_exists($rutaConfig)) {
+    $contenido = file_get_contents($rutaConfig);
+    $configures = json_decode($contenido, true) ?: [];
+}
+// 2. Definir la URL base con un valor por defecto si no existe en el JSON
+$defaultUrl = 'http://localhost:80/DigiCurvaServer/'; // 'https://ljusstudie.site/DigiCurvaServer';
+$apiBaseUrl = !empty($configures['base_url']) ? $configures['base_url'] : $defaultUrl;
+// URL de la API
+$apiUrlperfil = $apiBaseUrl . 'obtener_perfil.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,6 +138,10 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
+<script>
+    var configures = <?php echo json_encode($configures, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+    var API_BASE_URL = <?php echo json_encode($apiBaseUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+</script>
 <body>
     <div id="loading-screen">
         <div class="spinner"></div>
@@ -152,14 +171,8 @@
         </section>
     </form>
 <script>
-    async function cargarConfiguracion() {
-        const respuesta = await fetch('config.json');
-        const config = await respuesta.json();
-        return config;
-    }
-
-    var configures = await cargarConfiguracion();
-    var API_BASE_URL = configures.base_url || 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
+    //var configures = await cargarConfiguracion();
+    //var API_BASE_URL = configures.base_url || 'http://xampp.local/DigiCurvaServer/'//'https://ljusstudie.site/DigiCurvaServer';
     function increaseCount() {
         const countInput = document.getElementById('product-count');
         const max = parseInt(countInput.max);
@@ -238,7 +251,7 @@
         function RenderData(producto) {
             console.log(producto);
             
-            document.getElementById('product-title').textContent = producto.title;
+            document.getElementById('product-title').textContent = (producto.title.length >= 20 )? producto.title.slice(0,18) + '...' : producto.title;
             document.getElementById('product-price').value = producto.price;
             document.getElementById('product-count').max = producto.existencia;
             document.getElementById('producto_id').value = producto.producto_id;

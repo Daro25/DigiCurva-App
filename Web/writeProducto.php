@@ -178,14 +178,16 @@
                     <button type="button" class="btn-circle-sm btn-file" onclick="triggerUpload()"><ion-icon name="document-text-outline"></ion-icon></button>
                     <button type="button" class="btn-circle-sm btn-cam" onclick="triggerUpload()"><ion-icon name="camera-outline"></ion-icon></button>
                     <!--span class="limit-text">* 4 fotos max.</span-->
-                    <input type="file" name="image" id="fileInput" hidden accept="image/*" onchange="handleFile(this)" required>
+                    <?php 
+                    if(!$_GET['product']) echo '<input type="file" name="image" id="fileInput" hidden accept="image/*" onchange="handleFile(this)" required>';
+                    ?>
                     <input type="text" name="name" id="nombreIMG" hidden>
                     <input type="number" name="producto_id" id="producto_id" value="0" hidden>
                 </div>
                 <div class="select-group">
                     <label class="label-title" for="categoria">Categoría del producto</label>
-                    <select class="custom-select" id="categoria" name="categoria">
-                        <option>Selecciona una opción.</option>
+                    <select class="custom-select" id="categoria" name="categoria" required>
+                        <option disabled>Selecciona una opción.</option>
                         <option>Electrónica</option>
                         <option>Hogar</option>
                         <option>Ropa</option>
@@ -201,7 +203,7 @@
                         <label class="input-label" for="nombre">Título</label>
                         <input type="text" name="nombre" class="text-input" placeholder="" required>
                     </div>
-                    <input type="url" name="imagen_url" hidden id="url_ok_imagen">
+                    <input type="url" name="imagen_url" hidden="true" id="url_ok_imagen">
                     <div class="input-block">
                         <label class="input-label" for="descripcion">Descripción</label>
                         <textarea class="textarea-input" name="descripcion" required></textarea>
@@ -240,15 +242,15 @@
         iniciar();
         async function iniciar() {
             configures = await cargarConfiguracion();
-                API_BASE_URL = configures.base_url || API_BASE_URL;
-                URL_SUBIR_IMAGEN = configures.dominio + '/subirDrive' || URL_SUBIR_IMAGEN;
+            API_BASE_URL = configures.base_url || API_BASE_URL;
+            URL_SUBIR_IMAGEN = configures.base_url || URL_SUBIR_IMAGEN;
             try {
                     const categorias = await fetch(`${API_BASE_URL}consultar_categorias.php`);
                     const cateSelect = document.getElementById('categoria');
                     if(categorias.ok) {
                         const data = await categorias.json();
                         if(data.success) {
-                            cateSelect.innerHTML='<option value="Selecciona una opción.">Selecciona una opción.</option>';
+                            cateSelect.innerHTML='<option value="Selecciona una opción." disabled>Selecciona una opción.</option>';
                             data.categorias.forEach(element => {
                                 const option = document.createElement('option');
                                 option.text = element.nombre;
@@ -257,14 +259,17 @@
                             });
                         }
                     }
+                    cateSelect.value = "Selecciona una opción.";
             } catch (e) { console.warn("Fallo carga de categorias", e); }
             /**
              * La carga de todos los elementos debe ir al final para que los inputs ya estén cargados
              * con los datos de la base de datos.
              */
+        
             let producto = getProductFromURL();
             if (producto){
                 isUpdate = true;
+                console.log(producto);
                 renderProductoUrl(producto);
             }
         }
@@ -348,7 +353,7 @@
                 return null;
             }
             console.log("URL Recibida:", json.url);
-            return URL_SUBIR_IMAGEN + '/' + json.url;
+            return json.url;
         }
         // Lógica de UI
         function goToAddOffer() {
@@ -427,6 +432,7 @@
             document.getElementsByName('cantidad_existencia')[0].value = producto.existencia;
             document.getElementById('producto_id').value = producto.producto_id;
             document.getElementById('categoria').value = producto.categoria;
+            console.log(producto.categoria);
         }
     </script>
 

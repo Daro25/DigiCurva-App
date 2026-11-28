@@ -494,7 +494,7 @@
             window.location.href = 'anuncio.html'; // Conecta con la pantalla que hicimos antes
         }
         function goToCreateProducto (){
-            window.location.href = 'writeProducto.html'
+            window.location.href = 'writeProducto.php'
         }
         const DEFAULT_AVATAR = 'https://randomuser.me/api/portraits/lego/1.jpg';
         const MOCK_PHONE_IMG = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
@@ -578,7 +578,7 @@
                 // B. PRODUCTOS
                 try {
                     let formData = new FormData();
-                    formData.append('id', idUser);
+                    formData.append('id', <?= $perfil['usuario_id']; ?>);
                     const resProd = await fetch(`${API_BASE_URL}/Listar_productos.php`,{
                         method: 'POST',
                         body: formData
@@ -596,6 +596,7 @@
                             tipe: 'normal',
                             categoria: item.categoria
                         })) : [];
+                        console.log(state.productos);
                     }
                 } catch (e) { console.warn("Fallo productos", e); }
 
@@ -897,7 +898,7 @@
             }else{
                 let param1 = encodeURIComponent(parameter);
                 let param2 = encodeURIComponent(empaquetado(state.userProfile));
-                window.location.href = `writeProducto.html?product=${param1}`;
+                window.location.href = `writeProducto.php?product=${param1}`;
             }
         }
         //--------------------MAPA------------------------

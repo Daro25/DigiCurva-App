@@ -82,6 +82,10 @@ if (is_array($data_perfil)) {
             --text-dark: #333;
             --text-light: #666;
             --max-width: 1200px;
+            --bg-checkout: #f9fafb;
+            --border-checkout: #e5e7eb;
+            --primary-blue: #3b82f6;
+            --dark-blue: #1d4ed8;
         }
 
         /* --- PANTALLA DE CARGA --- */
@@ -301,7 +305,12 @@ if (is_array($data_perfil)) {
                             <ion-icon name="menu" class="menu-icon"></ion-icon>
                             
                             <div class="nav-links">
-                                <ion-icon name="home-outline" style="color:white; font-size:20px;"></ion-icon>
+                                <a href="./?page=home">
+                                <ion-icon name="home-outline" style="color:white; font-size:20px; display: <?php
+                                $page = filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+                                if (!$page || $page == 'home') echo 'none';
+                                else echo 'block';
+                                ?>;"></ion-icon></a>
                                 <a class="nav-link-text">Ofertas</a>
                                 <a class="nav-link-text">Nuevo</a>
                                 <a class="nav-link-text">Más vendido</a>
@@ -340,7 +349,7 @@ if (is_array($data_perfil)) {
                     include './Anuncio.html';
                     break;
                 case 'carrito':
-                    include './addCart.html';
+                    include './main/carrito.php';
                     break;
                 case 'search':
                     include './main/search.php';
